@@ -35,10 +35,13 @@ import {Optional} from "typescript-optional";
 import {IGrantable} from "@aws-cdk/aws-iam"
 
 export interface Configurator {
-    name: string
-    construct: Construct
-    grant(grantable: IGrantable): void;
-    setupEnvironment(setter: (key: string, value: string) => void): void
+    id: string
+
+    wantSecurity(z: Configurator): void;
+    wantEnvironment(z: Configurator): void;
+
+    giveEnvironment(setter: (key: string, value: string) => void): void
+    giveSecurity(grantable: IGrantable): void
 }
 
 export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; runtime: Runtime; topic: Topic; parentConstruct: Construct, asset: AssetCode }
@@ -56,6 +59,7 @@ type MicroserviceData = {
     topic: Topic
     parentConstruct: Construct
     handlers: Handler[]
+    configurators: Configurator[]
 }
 
 class Microservice {
@@ -74,7 +78,7 @@ type MicroserviceBuilderData = {
     name: string
     assets: string
     runtime: Runtime
-    handler: Handler[]
+    handlers: Handler[]
 }
 
 class MicroserviceBuilder {
@@ -83,8 +87,6 @@ class MicroserviceBuilder {
     constructor(data: MicroserviceBuilderData) {
         this.data = data;
     }
-
-    private handlers: Handler[]
 
     build(construct: Construct): Microservice {
 
@@ -98,7 +100,7 @@ class MicroserviceBuilder {
             }
         )
 
-        const configurators = this.data.handler.map(h => h.handle({
+        const configurators = this.data.handlers.map(h => h.handle({
             parentConstruct: construct,
             parentName: this.data.name,
             runtime: Optional.ofNullable(this.data.runtime).orElse(Runtime.NODEJS_12_X),
@@ -107,12 +109,9 @@ class MicroserviceBuilder {
             asset: asset
         }))
 
-        configurators.forEach((c) => configurators.filter(e => e.name != c.name).forEach(e => {
-            if (c.construct instanceof IGrantable) {
-                e.grant(c.construct)
-            }
-
-            c.setupEnvironment()
+        configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
+            c.wantEnvironment(e)
+            c.wantSecurity(e)
         }))
         return new Microservice({
             parentConstruct: construct,
@@ -120,7 +119,8 @@ class MicroserviceBuilder {
             runtime: Optional.ofNullable(this.data.runtime).orElse(Runtime.NODEJS_12_X),
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
-            handlers: this.data.handler
+            handlers: this.data.handlers,
+            configurators: configurators
         })
     }
 

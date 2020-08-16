@@ -44,6 +44,8 @@ class SimpleLambdaSubscribed(RequestHandler):
  */
 import {Configurator, Handler, HandlerOptions} from "./microservice";
 import {Function} from "@aws-cdk/aws-lambda";
+import {IGrantable} from "@aws-cdk/aws-iam"
+
 type HandlerData = {
     name: string,
     events: string[]
@@ -58,7 +60,8 @@ class SimpleLambdaSubscribed implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        const func = new Function(config.parentConstruct, `${config.parentName}-${this.data.name}`, {
+        let id = `${config.parentName}-${this.data.name}`;
+        const func = new Function(config.parentConstruct, id, {
             runtime: config.runtime,
             code: config.asset,
             deadLetterQueue: config.deadLetterQueue,
@@ -68,8 +71,24 @@ class SimpleLambdaSubscribed implements Handler {
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
 
-        return new class implements Configurator {
-            name: string;
+        return  {
+            id: id,
+            wantEnvironment(z: Configurator) {
+                z.giveEnvironment((k, v) => func.addEnvironment(k, v))
+            },
+
+            wantSecurity(z: Configurator) {
+                z.giveSecurity(func)
+            },
+
+            giveEnvironment(setter: (key: string, value: string) => void) {
+
+            },
+
+            giveSecurity(grantable: IGrantable) {
+
+            }
+
         };
     }
 

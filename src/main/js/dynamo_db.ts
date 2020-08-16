@@ -84,13 +84,21 @@ class DynamoDBHandler implements Handler {
         })
 
         return  {
-            name: tableName,
-            grant(grantable: IGrantable) {
+            id: tableName,
 
-                if (  grantable instanceof Function ) {
-                    table.grantReadWriteData(grantable)
-                    grantable.addEnvironment(`dynamo_${tableName}`, `${config.parentName}-${tableName}-Table`)
-                }
+            wantEnvironment(z: Configurator) {
+            },
+
+            wantSecurity(z: Configurator) {
+            },
+
+            giveEnvironment(setter: (key: string, value: string) => void) {
+
+                setter(`dynamo_${tableName}`, `${config.parentName}-${tableName}-Table`)
+            },
+
+            giveSecurity(grantable: IGrantable) {
+                table.grantReadWriteData(grantable)
             }
         }
     }
