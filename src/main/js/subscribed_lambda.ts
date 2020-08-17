@@ -45,28 +45,31 @@ class SimpleLambdaSubscribed(RequestHandler):
 import {Configurator, Handler, HandlerOptions} from "./microservice";
 import {Function} from "@aws-cdk/aws-lambda";
 import {IGrantable} from "@aws-cdk/aws-iam"
+import {Optional} from "typescript-optional";
 
 type HandlerData = {
     name: string,
     events: string[]
 }
 
-class SimpleLambdaSubscribed implements Handler {
+export class SimpleLambdaSubscribed implements Handler {
     private data: HandlerData;
+    private factory: (() => Function) | undefined;
 
-    constructor(data: HandlerData) {
+    constructor(data: HandlerData, factory: (() => Function) | undefined) {
         this.data = data
+        this.factory = factory
     }
 
     handle(config: HandlerOptions): Configurator {
 
         let id = `${config.parentName}-${this.data.name}`;
-        const func = new Function(config.parentConstruct, id, {
+        const func = Optional.ofNullable(this.factory).orElse(() => new Function(config.parentConstruct, id, {
             runtime: config.runtime,
             code: config.asset,
             deadLetterQueue: config.deadLetterQueue,
             handler: this.data.name
-        })
+        }))()
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
@@ -92,8 +95,8 @@ class SimpleLambdaSubscribed implements Handler {
         };
     }
 
-    static create(data: HandlerData) {
+    static create(data: HandlerData, factory?: () => Function) {
 
-        return new SimpleLambdaSubscribed(data)
+        return new SimpleLambdaSubscribed(data, factory)
     }
 }

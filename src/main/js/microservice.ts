@@ -25,7 +25,7 @@
         ]).build(scope=parent)
 
  */
-import {AssetCode, Function} from "@aws-cdk/aws-lambda";
+import {AssetCode, Code, Function} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 
@@ -44,7 +44,7 @@ export interface Configurator {
     giveSecurity(grantable: IGrantable): void
 }
 
-export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; runtime: Runtime; topic: Topic; parentConstruct: Construct, asset: AssetCode }
+export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; runtime: Runtime; topic: Topic; parentConstruct: Construct, asset: Code }
 
 export interface Handler {
 
