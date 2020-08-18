@@ -9,23 +9,27 @@ import {Optional} from "typescript-optional";
 import {IGrantable} from "@aws-cdk/aws-iam"
 import {haveResource} from "@aws-cdk/assert";
 
+const addEnvironmentMock = jest.fn().mockImplementation()
 jest.mock('@aws-cdk/aws-lambda', () => {
     return {
         Function: jest.fn().mockImplementation(() => {
             return {
-                addEnvironment: () => {
-                    console.log("Dammit")
-                }
+                addEnvironment: addEnvironmentMock
             };
         }),
         AssetCode: jest.fn().mockImplementation()
     };
 });
 
+
 describe("mock subscribed lambda testing", () => {
 
+
         beforeEach(() => {
-            (Function as any).mockClear();
+
+        })
+        afterEach(() => {
+            jest.clearAllMocks();
         });
 
         it("create lambda", () => {
@@ -41,7 +45,10 @@ describe("mock subscribed lambda testing", () => {
 
             f.addEnvironment("allo", "bye");
 
+            expect(addEnvironmentMock.mock.calls[0][0]).toEqual("allo")
+
         })
+
         it("thinkbig", () => {
 
             AssetCode.fromInline = jest.fn()

@@ -14,6 +14,7 @@ describe("subscribed lambda testing", () => {
 
         it("create lambda", () => {
 
+
             const lh = SimpleLambdaSubscribed.create({
                 events: ["please"], name: "my_lambda"
             })

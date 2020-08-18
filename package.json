@@ -34,7 +34,8 @@
     "@aws-cdk/assert": "*",
     "jest": "*",
     "@types/jest": "*",
-    "ts-jest": "*"
+    "ts-jest": "*",
+    "jest-when": "*"
   },
   "dependencies": {
     "typescript-optional": "^2.0.1",
