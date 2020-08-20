@@ -42,61 +42,59 @@ class SimpleLambdaSubscribed(RequestHandler):
     configure_chain(function)
     return function
  */
-import {Configurator, Handler, HandlerOptions} from "./microservice";
+import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function} from "@aws-cdk/aws-lambda";
-import {IGrantable} from "@aws-cdk/aws-iam"
-import {Optional} from "typescript-optional";
+import {Runtime} from "@aws-cdk/aws-lambda/lib/runtime";
 
 type HandlerData = {
     name: string,
+    runtime: Runtime,
     events: string[]
 }
 
 export class SimpleLambdaSubscribed implements Handler {
     private data: HandlerData;
-    private factory: (() => Function) | undefined;
 
-    constructor(data: HandlerData, factory: (() => Function) | undefined) {
+    constructor(data: HandlerData) {
         this.data = data
-        this.factory = factory
     }
 
     handle(config: HandlerOptions): Configurator {
 
         let id = `${config.parentName}-${this.data.name}`;
-        const func = Optional.ofNullable(this.factory).orElse(() => new Function(config.parentConstruct, id, {
-            runtime: config.runtime,
+        const func = new Function(config.parentConstruct, id, {
+            runtime: this.data.runtime,
             code: config.asset,
             deadLetterQueue: config.deadLetterQueue,
             handler: this.data.name
-        }))()
+        })
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
 
-        return  {
-            id: id,
-            wantEnvironment(z: Configurator) {
-                z.giveEnvironment((k, v) => func.addEnvironment(k, v))
-            },
-
-            wantSecurity(z: Configurator) {
-                z.giveSecurity(func)
-            },
-
-            giveEnvironment(setter: (key: string, value: string) => void) {
-
-            },
-
-            giveSecurity(grantable: IGrantable) {
-
-            }
-
-        };
+        return new LambdaConfigurator(id, func)
     }
 
-    static create(data: HandlerData, factory?: () => Function) {
+    static create(data: HandlerData) {
 
-        return new SimpleLambdaSubscribed(data, factory)
+        return new SimpleLambdaSubscribed(data)
     }
 }
+
+export class LambdaConfigurator extends DefaultConfigurator {
+
+    private readonly func: Function;
+
+    constructor(id: string, func: Function) {
+        super(id);
+        this.func = func;
+    }
+
+    wantEnvironment(z: Configurator) {
+        z.giveEnvironment((k, v) => this.func.addEnvironment(k, v))
+    }
+
+    wantSecurity(z: Configurator) {
+        z.giveSecurity(this.func)
+    }
+};

@@ -25,7 +25,7 @@
         ]).build(scope=parent)
 
  */
-import {AssetCode, Code, Function} from "@aws-cdk/aws-lambda";
+import {AssetCode, Code} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 
@@ -44,7 +44,28 @@ export interface Configurator {
     giveSecurity(grantable: IGrantable): void
 }
 
-export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; runtime: Runtime; topic: Topic; parentConstruct: Construct, asset: Code }
+export class DefaultConfigurator implements Configurator {
+
+    readonly id: string;
+
+    constructor(id: string) {
+        this.id = id
+    }
+
+    giveEnvironment(setter: (key: string, value: string) => void): void {
+    }
+
+    giveSecurity(grantable: IGrantable): void {
+    }
+
+    wantEnvironment(z: Configurator): void {
+    }
+
+    wantSecurity(z: Configurator): void {
+    }
+}
+
+export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct, asset: Code }
 
 export interface Handler {
 
@@ -103,7 +124,6 @@ class MicroserviceBuilder {
         const configurators = this.data.handlers.map(h => h.handle({
             parentConstruct: construct,
             parentName: this.data.name,
-            runtime: Optional.ofNullable(this.data.runtime).orElse(Runtime.NODEJS_12_X),
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
             asset: asset

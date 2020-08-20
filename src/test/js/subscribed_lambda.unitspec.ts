@@ -1,22 +1,19 @@
 import {SimpleLambdaSubscribed} from "../../main/js/subscribed_lambda";
-import {AssetCode, Runtime, Function} from "@aws-cdk/aws-lambda";
+import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 import '@aws-cdk/assert/jest';
 
-import {Construct, Stack} from "@aws-cdk/core";
-import {Optional} from "typescript-optional";
-import {IGrantable} from "@aws-cdk/aws-iam"
-import {haveResource} from "@aws-cdk/assert";
+import {Stack} from "@aws-cdk/core";
 
 
 describe("subscribed lambda testing", () => {
 
         it("create lambda", () => {
 
-
             const lh = SimpleLambdaSubscribed.create({
-                events: ["please"], name: "my_lambda"
+                events: ["please"], name: "my_lambda", runtime: Runtime.NODEJS_12_X,
+
             })
 
             let theStack = new Stack();
@@ -25,7 +22,6 @@ describe("subscribed lambda testing", () => {
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
-                runtime: Runtime.NODEJS_12_X,
                 topic: new Topic(theStack, "topic", {
                     topicName: "topicName"
                 })
