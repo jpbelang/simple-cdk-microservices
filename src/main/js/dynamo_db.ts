@@ -1,13 +1,12 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice"
-import {Attribute, BillingMode, Table} from "@aws-cdk/aws-dynamodb"
+import {BillingMode, Table, TableProps} from "@aws-cdk/aws-dynamodb"
 import {RemovalPolicy} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
+import {Optional} from "typescript-optional";
 
 type DynamoDBHandlerData = {
-    name: string,
-    partitionKey: Attribute
-    sortKey: Attribute
-}
+    tableName: string
+} & TableProps
 
 export class DynamoDBHandler implements Handler {
     private data: DynamoDBHandlerData;
@@ -18,17 +17,15 @@ export class DynamoDBHandler implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let tableName = `${config.parentName}-${this.data.name}-Table`;
-        const table = new Table(config.parentConstruct, tableName, {
+        let tableName = `${config.parentName}-${this.data.tableName}-Table`;
+        const adjustedProps = Object.assign(this.data, {
             tableName: tableName,
-            partitionKey: this.data.partitionKey,
-            sortKey: this.data.sortKey,
-            removalPolicy: RemovalPolicy.DESTROY,
-            billingMode: BillingMode.PAY_PER_REQUEST
+            removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
+            billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
+        });
+        const table = new Table(config.parentConstruct, tableName, adjustedProps)
 
-        })
-
-        return new DynamoConfigurator(tableName, this.data.name, table)
+            return new DynamoConfigurator(tableName, this.data.tableName, table)
     }
 
     static create(data: DynamoDBHandlerData) {

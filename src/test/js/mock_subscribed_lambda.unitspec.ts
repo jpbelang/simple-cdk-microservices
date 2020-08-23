@@ -62,14 +62,13 @@ describe("mock subscribed lambda testing", () => {
         it("configuration of handler", () => {
 
             const lh = SimpleLambdaSubscribed.create({
-                events: ["please"], name: "my_lambda",
-                runtime: Runtime,
+                topicEvents: ["please"], handler: "my_lambda",
+                runtime: Runtime, code: AssetCode.fromInline("doodah")
             })
 
             const actualFunction = Function.prototype.constructor() as Function
             let theStack = new Stack();
             const configurator = lh.handle({
-                asset: AssetCode.fromInline("doodah"),
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",

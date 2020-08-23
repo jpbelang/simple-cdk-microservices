@@ -1,4 +1,3 @@
-import {AssetCode} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 import '@aws-cdk/assert/jest';
@@ -15,12 +14,11 @@ describe("dynamo db testing", () => {
             const lh = DynamoDBHandler.create({
                 partitionKey: {name: "pk", type: AttributeType.STRING},
                 sortKey: {name: "sk", type: AttributeType.STRING},
-                name: "myTable",
+                tableName: "myTable",
             })
 
             let theStack = new Stack();
             lh.handle({
-                asset: AssetCode.fromInline("doodah"),
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",

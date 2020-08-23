@@ -25,7 +25,7 @@
         ]).build(scope=parent)
 
  */
-import {AssetCode, Code} from "@aws-cdk/aws-lambda";
+import {AssetCode} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 
@@ -65,7 +65,7 @@ export class DefaultConfigurator implements Configurator {
     }
 }
 
-export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct, asset: Code }
+export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
 
 export interface Handler {
 
@@ -76,7 +76,6 @@ export interface Handler {
 type MicroserviceData = {
     parentName: string
     deadLetterQueue: Queue
-    runtime: Runtime
     topic: Topic
     parentConstruct: Construct
     handlers: Handler[]
@@ -97,8 +96,6 @@ class Microservice {
 
 type MicroserviceBuilderData = {
     name: string
-    assets: string
-    runtime: Runtime
     handlers: Handler[]
 }
 
@@ -111,7 +108,6 @@ class MicroserviceBuilder {
 
     build(construct: Construct): Microservice {
 
-        const asset = AssetCode.fromAsset(this.data.assets)
         const serviceTopic = new Topic(construct, this.data.name + "Topic", {
             topicName: this.data.name + "Topic"
         })
@@ -126,7 +122,6 @@ class MicroserviceBuilder {
             parentName: this.data.name,
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
-            asset: asset
         }))
 
         configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
@@ -136,7 +131,6 @@ class MicroserviceBuilder {
         return new Microservice({
             parentConstruct: construct,
             parentName: this.data.name,
-            runtime: Optional.ofNullable(this.data.runtime).orElse(Runtime.NODEJS_12_X),
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
             handlers: this.data.handlers,

@@ -44,13 +44,71 @@ class SimpleLambdaSubscribed(RequestHandler):
  */
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
+import {IResource} from "@aws-cdk/aws-apigateway";
 
 type HandlerData = {
-    topicEvents: string[]
+    resourceTree: ResourceTree
+    topResource: IResource
 } & FunctionProps
 
-export class SimpleLambdaSubscribed implements Handler {
-    private data: HandlerData;
+type MethodIntegrator = (methodName: string, resource: IResource, func: Function ) => void
+type ResourceIntegrator = (methodName: string, resource: IResource, func: Function ) => [IResource, ResourceTree]
+type ResourceTree = { [key: string]: ResourceTree|MethodIntegrator|ResourceIntegrator }
+
+const foo: ResourceTree = {
+    "key": (m,r,f) => {},
+    "more": {
+        GET: (m,r,f) => {}
+    },
+    "resource": simpleResource({
+        anotherKey: {
+            POST: (m,r,f) => {}
+        }
+    })
+
+}
+export function simpleMethod():  MethodIntegrator {
+
+    return (m,r, f) => {
+
+        r.addMethod(m)
+    }
+}
+
+export function simpleResource(built: ResourceTree):  ResourceIntegrator {
+
+    return (m,r, f) => {
+
+        const newResource = r.addResource(m)
+        return [r, built]
+    }
+}
+
+export function configureTree(func: Function, resource: IResource, tree: ResourceTree) {
+
+    Object.entries(tree).forEach(
+        ([key, treeOrIntegrator]) => {
+            if ( /(GET)|(POST)|(PUT)|(DELETE)/.test(key)) {
+                // we should have a function.  Type
+                if ( typeof  treeOrIntegrator == "function") {
+                    treeOrIntegrator(key, resource, func)
+                }
+            } else {
+
+                if ( typeof  treeOrIntegrator == "function") {
+                    const integrator = treeOrIntegrator as ResourceIntegrator
+                    const values = integrator(key, resource, func)
+                    configureTree(func, values[0], values[1])
+                } else {
+                    const newResource = resource.addResource(key)
+                    configureTree(func, newResource, treeOrIntegrator)
+                }
+            }
+        })
+}
+
+export class WebLambda implements Handler {
+    private readonly data: HandlerData;
 
     constructor(data: HandlerData) {
         this.data = data
@@ -64,16 +122,18 @@ export class SimpleLambdaSubscribed implements Handler {
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
 
-        return new LambdaConfigurator(id, func)
+        configureTree(func, this.data.topResource, this.data.resourceTree)
+
+        return new WebLambdaConfigurator(id, func)
     }
 
     static create(data: HandlerData) {
 
-        return new SimpleLambdaSubscribed(data)
+        return new WebLambda(data)
     }
 }
 
-export class LambdaConfigurator extends DefaultConfigurator {
+export class WebLambdaConfigurator extends DefaultConfigurator {
 
     private readonly func: Function;
 

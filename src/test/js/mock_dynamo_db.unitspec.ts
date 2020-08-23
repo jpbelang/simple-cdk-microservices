@@ -38,12 +38,11 @@ describe("mock dynamo db testing", () => {
             const lh = DynamoDBHandler.create({
                 partitionKey: { name: "pk", type: AttributeType.STRING},
                 sortKey: { name: "sk", type: AttributeType.STRING},
-                name: "myTable",
+                tableName: "myTable",
             })
 
             let theStack = new Stack();
             const configurator = lh.handle({
-                asset: AssetCode.fromInline("doodah"),
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
