@@ -99,7 +99,7 @@ type MicroserviceBuilderData = {
     handlers: Handler[]
 }
 
-class MicroserviceBuilder {
+export class MicroserviceBuilder {
     private data: MicroserviceBuilderData;
 
     constructor(data: MicroserviceBuilderData) {
