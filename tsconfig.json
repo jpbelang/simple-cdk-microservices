@@ -21,6 +21,9 @@
   },
   "include": [
     "src/main/js",
-    "src/test/js"
+    "src/test/js",
+    "src/example/bin",
+    "src/example/lib",
+    "src/example/test"
   ]
 }

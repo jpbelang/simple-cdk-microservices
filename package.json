@@ -10,7 +10,7 @@
     "test:unit": "mocha -r ts-node/register src/test/js/**/*.unitspec.ts",
     "pre:build": "npm cit",
     "build": "npm run test && webpack --config webpack.config.js",
-    "start": "node ./index.js"
+    "cdk": "cd src/example; cdk"
   },
   "keywords": [],
   "author": "",
@@ -37,6 +37,7 @@
     "typescript-optional": "^2.0.1",
     "@aws-cdk/aws-apigateway": "^1.60.0",
     "@aws-cdk/aws-dynamodb": "^1.60.0",
-    "@aws-cdk/aws-lambda": "^1.60"
+    "@aws-cdk/aws-lambda": "^1.60",
+    "source-map-support": "^0.5.16"
   }
 }
