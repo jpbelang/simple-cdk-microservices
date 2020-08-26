@@ -1,37 +1,8 @@
-/*
-    dialog = api.root.add_resource("smt")
 
-    return LambdaMicroserviceBuilder.create_microservice(
-        service_name=identifier + "-smt-participation",
-        asset="assets/smt-participation-service-1.0.0-SNAPSHOT.zip",
-        runtime_calculator=always_node,
-        handlers=[
-            DynamoTableHandler.create_handler(name="campaigninfo", partition_key=dynamo.Attribute(
-                name="Id",
-                type=dynamo.AttributeType.STRING), sort_key=dynamo.Attribute(
-                name="Sort",
-                type=dynamo.AttributeType.STRING)),
-            WebHandler.create_handler(name="smtparticipation.http", setup_resources=lambda l:
-            build_resource_tree(l, dialog, integration_factory=simple_integration(), tree_definition={
-                "smtcampaign": {
-                    "POST": simple_method_integration(),
-                    "GET": simple_method_integration(),
-                    "{campaign_id}": {
-                        "GET": simple_method_integration(),
-                        "DELETE": simple_method_integration()
-                    }
-                }
-            }))
-        ]).build(scope=parent)
-
- */
-import {AssetCode, IEventSource} from "@aws-cdk/aws-lambda";
+import {IEventSource} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
-
-import {Runtime} from "@aws-cdk/aws-lambda/lib/runtime";
 import {Construct} from "@aws-cdk/core";
-import {Optional} from "typescript-optional";
 import {IGrantable} from "@aws-cdk/aws-iam"
 
 export interface Configurator {
@@ -44,6 +15,8 @@ export interface Configurator {
     setEnvironment(setter: (key: string, value: string) => void): void
     grantSecurityTo(grantable: IGrantable): void
     receiveInternalEvents(setter: (source: IEventSource) => void): void
+
+    listenToServiceTopic(topic: Topic): void;
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -71,6 +44,11 @@ export class DefaultConfigurator implements Configurator {
 
     wantSecurity(z: Configurator): void {
     }
+
+    listenToServiceTopic(topic: Topic): void {
+    }
+
+
 }
 
 export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
@@ -97,8 +75,9 @@ class Microservice {
         this.data = data
     }
 
-    interestedIn(micro: Microservice) {
+    listensForEventsFrom(services: Microservice[]) {
 
+        services.forEach(s => this.data.configurators.forEach(x => x.listenToServiceTopic(s.data.topic)))
     }
 }
 

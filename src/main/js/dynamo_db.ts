@@ -4,7 +4,6 @@ import {RemovalPolicy} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "@aws-cdk/aws-lambda";
-import {LambdaIntegration} from "@aws-cdk/aws-apigateway";
 import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
 
 type DynamoDBHandlerData = {

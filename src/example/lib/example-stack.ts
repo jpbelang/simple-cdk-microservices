@@ -1,4 +1,3 @@
-
 import {AttributeType, StreamViewType} from "@aws-cdk/aws-dynamodb";
 import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
 import {RestApi} from "@aws-cdk/aws-apigateway";
@@ -15,7 +14,7 @@ export class ExampleStack extends Stack {
 
         const me = new RestApi(this, "GW");
         // The code that defines your stack goes here
-        MicroserviceBuilder.microservice({
+        const service1 = MicroserviceBuilder.microservice({
             name: "first-example",
             handlers: [
                 DynamoDBHandler.create({
@@ -45,7 +44,7 @@ export class ExampleStack extends Stack {
         }).build(this);
 
 
-        MicroserviceBuilder.microservice({
+       const service2 =  MicroserviceBuilder.microservice({
             name: "second-example",
             handlers: [
                 DynamoDBHandler.create({
@@ -62,5 +61,6 @@ export class ExampleStack extends Stack {
             ]
         }).build(this);
 
+       service1.listensForEventsFrom([service2])
     }
 }

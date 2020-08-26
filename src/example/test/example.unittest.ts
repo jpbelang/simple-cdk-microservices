@@ -1,4 +1,4 @@
-import { expect as expectCDK, matchTemplate, MatchStyle } from '@aws-cdk/assert';
+import {expect as expectCDK, MatchStyle, matchTemplate} from '@aws-cdk/assert';
 import * as cdk from '@aws-cdk/core';
 import * as Example from '../lib/example-stack';
 
