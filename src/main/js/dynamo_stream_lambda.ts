@@ -44,12 +44,13 @@ class SimpleLambdaSubscribed(RequestHandler):
  */
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
+import {Table} from "@aws-cdk/aws-dynamodb";
+import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
 
 type HandlerData = {
-    topicEvents: string[]
 } & FunctionProps
 
-export class SimpleLambdaSubscribed implements Handler {
+export class DynamoStreamLambda implements Handler {
     private data: HandlerData;
 
     constructor(data: HandlerData) {
@@ -63,13 +64,12 @@ export class SimpleLambdaSubscribed implements Handler {
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
-
         return new LambdaConfigurator(id, func)
     }
 
     static create(data: HandlerData) {
 
-        return new SimpleLambdaSubscribed(data)
+        return new DynamoStreamLambda(data)
     }
 }
 
@@ -88,5 +88,11 @@ export class LambdaConfigurator extends DefaultConfigurator {
 
     wantSecurity(z: Configurator) {
         z.grantSecurityTo(this.func)
+    }
+
+
+    wantInternalEventsSource(z: Configurator) {
+
+        z.receiveInternalEvents((s) => s instanceof DynamoEventSource? this.func.addEventSource(s):{})
     }
 };

@@ -75,10 +75,10 @@ describe("mock web lambda testing", () => {
             const configurator = new LambdaConfigurator("foo", actualFunction)
             configurator.wantEnvironment({
                 id: "",
-                giveEnvironment(setter: (key: string, value: string) => void): void {
+                setEnvironment(setter: (key: string, value: string) => void): void {
                     setter("hello", "goodbye")
                 },
-                giveSecurity(grantable: IGrantable): void {
+                grantSecurityTo(grantable: IGrantable): void {
                 },
                 wantEnvironment(z: Configurator): void {
                 },

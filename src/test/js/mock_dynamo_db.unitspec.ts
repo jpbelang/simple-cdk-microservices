@@ -60,7 +60,7 @@ describe("mock dynamo db testing", () => {
 
             const configurator = new DynamoConfigurator("foo", "goo", actualTable)
             const grantable = jest.fn().mockImplementation() as any
-            configurator.giveSecurity(grantable)
+            configurator.grantSecurityTo(grantable)
             expect(grantReadWriteDataMock.mock.calls[0][0]).toEqual(grantable)
         })
 

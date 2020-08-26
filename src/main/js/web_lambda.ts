@@ -143,10 +143,10 @@ export class WebLambdaConfigurator extends DefaultConfigurator {
     }
 
     wantEnvironment(z: Configurator) {
-        z.giveEnvironment((k, v) => this.func.addEnvironment(k, v))
+        z.setEnvironment((k, v) => this.func.addEnvironment(k, v))
     }
 
     wantSecurity(z: Configurator) {
-        z.giveSecurity(this.func)
+        z.grantSecurityTo(this.func)
     }
 };

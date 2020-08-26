@@ -82,9 +82,9 @@ describe("mock subscribed lambda testing", () => {
             expect(sendMessageMock.mock.calls[0][0]).toEqual(actualFunction)
 
             configurator.wantEnvironment({
-                id: "", giveEnvironment(setter: (key: string, value: string) => void): void {
+                id: "", setEnvironment(setter: (key: string, value: string) => void): void {
                     setter("hello", "goodbye")
-                }, giveSecurity(grantable: IGrantable): void {
+                }, grantSecurityTo(grantable: IGrantable): void {
                 }, wantEnvironment(z: Configurator): void {
                 }, wantSecurity(z: Configurator): void {
                 }
@@ -102,10 +102,10 @@ describe("mock subscribed lambda testing", () => {
             const configurator = new LambdaConfigurator("foo", actualFunction)
             configurator.wantEnvironment({
                 id: "",
-                giveEnvironment(setter: (key: string, value: string) => void): void {
+                setEnvironment(setter: (key: string, value: string) => void): void {
                     setter("hello", "goodbye")
                 },
-                giveSecurity(grantable: IGrantable): void {
+                grantSecurityTo(grantable: IGrantable): void {
                 },
                 wantEnvironment(z: Configurator): void {
                 },

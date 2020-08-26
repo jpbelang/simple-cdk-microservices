@@ -25,7 +25,7 @@
         ]).build(scope=parent)
 
  */
-import {AssetCode} from "@aws-cdk/aws-lambda";
+import {AssetCode, IEventSource} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
 
@@ -39,9 +39,11 @@ export interface Configurator {
 
     wantSecurity(z: Configurator): void;
     wantEnvironment(z: Configurator): void;
+    wantInternalEventsSource(z: Configurator): void
 
-    giveEnvironment(setter: (key: string, value: string) => void): void
-    giveSecurity(grantable: IGrantable): void
+    setEnvironment(setter: (key: string, value: string) => void): void
+    grantSecurityTo(grantable: IGrantable): void
+    receiveInternalEvents(setter: (source: IEventSource) => void): void
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -52,10 +54,16 @@ export class DefaultConfigurator implements Configurator {
         this.id = id
     }
 
-    giveEnvironment(setter: (key: string, value: string) => void): void {
+    setEnvironment(setter: (key: string, value: string) => void): void {
     }
 
-    giveSecurity(grantable: IGrantable): void {
+    grantSecurityTo(grantable: IGrantable): void {
+    }
+
+    receiveInternalEvents(setter: (source: IEventSource) => void): void {
+    }
+
+    wantInternalEventsSource(z: Configurator): void {
     }
 
     wantEnvironment(z: Configurator): void {
@@ -127,6 +135,7 @@ export class MicroserviceBuilder {
         configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
             c.wantEnvironment(e)
             c.wantSecurity(e)
+            c.wantInternalEventsSource(e)
         }))
         return new Microservice({
             parentConstruct: construct,
