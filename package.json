@@ -7,9 +7,8 @@
     "build": "tsc",
     "watch": "tsc -w",
     "lint": "tslint --project tsconfig.json",
-    "pretest": "npm run lint",
-    "test:unit": "mocha -r ts-node/register src/test/js/**/*.unitspec.ts",
-    "pre:build": "npm cit",
+    "test": "jest --passWithNoTests",
+
     "builder": "npm run test && webpack --config webpack.config.js",
     "cdk": "cd src/example; cdk"
   },

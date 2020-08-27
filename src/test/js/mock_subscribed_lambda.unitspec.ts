@@ -1,5 +1,5 @@
 import {LambdaConfigurator, SimpleLambdaSubscribed} from "../../main/js/subscribed_lambda";
-import {Function} from "@aws-cdk/aws-lambda";
+import {Function, IEventSource} from "@aws-cdk/aws-lambda";
 
 
 import {Queue} from "@aws-cdk/aws-sqs";
@@ -87,6 +87,9 @@ describe("mock subscribed lambda testing", () => {
                 }, grantSecurityTo(grantable: IGrantable): void {
                 }, wantEnvironment(z: Configurator): void {
                 }, wantSecurity(z: Configurator): void {
+                }, listenToServiceTopic(topic: Topic): void {
+                }, receiveInternalEvents(setter: (source: IEventSource) => void): void {
+                }, wantInternalEventsSource(z: Configurator): void {
                 }
 
             });
@@ -99,7 +102,7 @@ describe("mock subscribed lambda testing", () => {
 
             const actualFunction = Function.prototype.constructor() as Function
 
-            const configurator = new LambdaConfigurator("foo", actualFunction)
+            const configurator = new LambdaConfigurator("foo", actualFunction, null as any, [])
             configurator.wantEnvironment({
                 id: "",
                 setEnvironment(setter: (key: string, value: string) => void): void {
@@ -110,7 +113,11 @@ describe("mock subscribed lambda testing", () => {
                 wantEnvironment(z: Configurator): void {
                 },
                 wantSecurity(z: Configurator): void {
+                }, listenToServiceTopic(topic: Topic): void {
+                }, receiveInternalEvents(setter: (source: IEventSource) => void): void {
+                }, wantInternalEventsSource(z: Configurator): void {
                 }
+
 
             });
 
