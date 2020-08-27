@@ -1,6 +1,6 @@
 
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
+import * as lambda from "@aws-cdk/aws-lambda";
 import {SubscriptionFilter, Topic} from "@aws-cdk/aws-sns"
 import {Queue} from "@aws-cdk/aws-sqs"
 
@@ -8,7 +8,7 @@ import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
 
 type HandlerData = {
     topicEvents: string[]
-} & FunctionProps
+} & lambda.FunctionProps
 
 
 export class SimpleLambdaSubscribed implements Handler {
@@ -21,7 +21,7 @@ export class SimpleLambdaSubscribed implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         let id = `${config.parentName}-${this.data.handler}`;
-        const func = new Function(config.parentConstruct, id, this.data)
+        const func = new lambda.Function(config.parentConstruct, id + "foo", this.data)
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
@@ -37,11 +37,11 @@ export class SimpleLambdaSubscribed implements Handler {
 
 export class LambdaConfigurator extends DefaultConfigurator {
 
-    private readonly func: Function;
+    private readonly func: lambda.Function;
     private readonly deadLetterQueue: Queue
     private readonly events: string[]
 
-    constructor(id: string, func: Function, deadLetterQueue: Queue, events: string[]) {
+    constructor(id: string, func: lambda.Function, deadLetterQueue: Queue, events: string[]) {
         super(id);
         this.func = func;
         this.deadLetterQueue = deadLetterQueue

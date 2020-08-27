@@ -68,7 +68,7 @@ type MicroserviceData = {
     configurators: Configurator[]
 }
 
-class Microservice {
+export class Microservice {
     private data: MicroserviceData;
 
     constructor(data: MicroserviceData) {
