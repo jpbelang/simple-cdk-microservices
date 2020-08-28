@@ -58,6 +58,11 @@ export interface Handler {
     handle(config: HandlerOptions): Configurator
 }
 
+export interface ServiceListener {
+    topic(): Topic
+    listensForEventsFrom(services: ServiceListener[]): void
+}
+
 
 type MicroserviceData = {
     parentName: string
@@ -68,16 +73,21 @@ type MicroserviceData = {
     configurators: Configurator[]
 }
 
-export class Microservice {
+export class Microservice implements ServiceListener {
     private data: MicroserviceData;
 
     constructor(data: MicroserviceData) {
         this.data = data
     }
 
-    listensForEventsFrom(services: Microservice[]) {
+    topic(): Topic {
+        return this.data.topic;
+    }
 
-        services.forEach(s => this.data.configurators.forEach(x => x.listenToServiceTopic(s.data.topic)))
+
+    listensForEventsFrom(services: ServiceListener[]) {
+
+        services.forEach(s => this.data.configurators.forEach(x => x.listenToServiceTopic(s.topic())))
     }
 }
 

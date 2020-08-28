@@ -1,5 +1,10 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice"
-import {BillingMode, Table, TableProps} from "@aws-cdk/aws-dynamodb"
+import {
+    BillingMode,
+    GlobalSecondaryIndexProps,
+    Table,
+    TableProps
+} from "@aws-cdk/aws-dynamodb"
 import {RemovalPolicy} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
 import {Optional} from "typescript-optional";
@@ -8,6 +13,7 @@ import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
 
 type DynamoDBHandlerData = {
     tableName: string
+    globalIndices?: [GlobalSecondaryIndexProps]
 } & TableProps
 
 export class DynamoDBHandler implements Handler {
@@ -27,7 +33,10 @@ export class DynamoDBHandler implements Handler {
         });
         const table = new Table(config.parentConstruct, tableName, adjustedProps)
 
-            return new DynamoConfigurator(tableName, this.data.tableName, table)
+        Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {
+            table.addGlobalSecondaryIndex(gsi)
+        })
+        return new DynamoConfigurator(tableName, this.data.tableName, table)
     }
 
     static create(data: DynamoDBHandlerData) {
