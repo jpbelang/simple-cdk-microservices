@@ -2,11 +2,11 @@ import {AttributeType, StreamViewType} from "@aws-cdk/aws-dynamodb";
 import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
 import {RestApi} from "@aws-cdk/aws-apigateway";
 import {Construct, Stack, StackProps} from "@aws-cdk/core";
-import {MicroserviceBuilder} from "../../main/js/microservice";
-import {DynamoDBHandler} from "../../main/js/dynamo_db";
-import {SimpleLambdaSubscribed} from "../../main/js/subscribed_lambda";
-import {simpleMethod, WebLambda} from "../../main/js/web_lambda";
-import {DynamoStreamLambda} from "../../main/js/dynamo_stream_lambda";
+import {MicroserviceBuilder} from "../../main/js";
+import {DynamoDBHandler} from "../../main/js";
+import {SimpleLambdaSubscribed} from "../../main/js";
+import {simpleMethod, WebLambda} from "../../main/js";
+import {DynamoStreamLambda} from "../../main/js";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
