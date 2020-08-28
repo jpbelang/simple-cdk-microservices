@@ -25,7 +25,7 @@ export class ExampleStack extends Stack {
                 SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
                     runtime: Runtime.NODEJS_12_X,
-                    code: AssetCode.fromInline("doodah"),
+                    code: AssetCode.fromAsset("/Users/jpbelang/Capsana/portal-lambda/portal-cdk-ts/assets/mail-service-1.0.0-SNAPSHOT.zip"),
                     handler: "my_lambda"
                 }),
                 WebLambda.create({
