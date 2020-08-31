@@ -2,10 +2,11 @@ import {LambdaConfigurator} from "../../main/js/subscribed_lambda";
 import {Function, IEventSource} from "@aws-cdk/aws-lambda";
 import '@aws-cdk/assert/jest';
 import {IGrantable} from "@aws-cdk/aws-iam"
-import {Configurator} from "../../main/js/microservice";
+import {Configurator} from "../../main/js";
 import {configureTree, simpleMethod, simpleResource} from "../../main/js/web_lambda";
-import {Resource} from "@aws-cdk/aws-apigateway";
+import {Resource,LambdaIntegration} from "@aws-cdk/aws-apigateway";
 import {Topic} from "@aws-cdk/aws-sns";
+import anything = jasmine.anything;
 
 const {Runtime, AssetCode} = jest.requireActual("@aws-cdk/aws-lambda");
 
@@ -17,6 +18,7 @@ jest.mock('@aws-cdk/aws-lambda', () => {
             addEnvironment: addEnvironmentMock
         };
     });
+
     return {
         Function: functionMock,
     };
@@ -25,6 +27,11 @@ jest.mock('@aws-cdk/aws-lambda', () => {
 const addResource = jest.fn().mockImplementation()
 const addMethod = jest.fn().mockImplementation()
 jest.mock("@aws-cdk/aws-apigateway", () => {
+    const integrationMock = jest.fn().mockImplementation(() => {
+        return {
+            bind: jest.fn().mockImplementation()
+        };
+    });
     const functionMock = jest.fn().mockImplementation(() => {
         return {
             addResource: addResource.mockReturnThis(),
@@ -33,6 +40,7 @@ jest.mock("@aws-cdk/aws-apigateway", () => {
     });
     return {
         Resource: functionMock,
+        LambdaIntegration: integrationMock
     };
 });
 
@@ -63,9 +71,9 @@ describe("mock web lambda testing", () => {
             })
 
             expect(addResource).toHaveBeenCalledWith("fun")
-            expect(addMethod).toBeCalledWith("POST")
+            expect(addMethod).toBeCalledWith("POST", anything())
             expect(addResource).toHaveBeenCalledWith("more")
-            expect(addMethod).toBeCalledWith("GET")
+            expect(addMethod).toBeCalledWith("GET", anything())
         })
 
 
