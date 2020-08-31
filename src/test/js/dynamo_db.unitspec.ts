@@ -49,7 +49,7 @@ describe("dynamo db testing", () => {
                         }
                     ],
                     "BillingMode": "PAY_PER_REQUEST",
-                    "TableName": "hola-myTable-Table"
+                    "TableName": "hola-myTable"
                 }
             )
 

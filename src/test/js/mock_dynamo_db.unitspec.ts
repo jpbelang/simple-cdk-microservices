@@ -42,16 +42,25 @@ describe("mock dynamo db testing", () => {
             })
 
             let theStack = new Stack();
-            const configurator = lh.handle({
+            const configurator: DynamoConfigurator= lh.handle({
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {
                     topicName: "topicName"
                 })
-            })
+            }) as any
 
-            expect(configurator.id).toEqual("hola-myTable-Table")
+            expect(configurator.id).toEqual("hola-myTable")
+
+            let key;
+            let value;
+            expect(configurator.setEnvironment((k,v) => {
+                key = k
+                value = v
+            }))
+            expect(key).toBe("dynamo_myTable")
+            expect(value).toBe("hola-myTable-Table")
         })
 
         it("post configuration", () => {

@@ -44,7 +44,7 @@ class SimpleLambdaSubscribed(RequestHandler):
  */
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
-import {IResource} from "@aws-cdk/aws-apigateway";
+import {IResource, LambdaIntegration} from "@aws-cdk/aws-apigateway";
 
 type HandlerData = {
     resourceTree: ResourceTree
@@ -71,7 +71,7 @@ export function simpleMethod():  MethodIntegrator {
 
     return (m,r, f) => {
 
-        r.addMethod(m)
+        r.addMethod(m, new LambdaIntegration(f))
     }
 }
 

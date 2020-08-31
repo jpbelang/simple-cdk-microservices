@@ -25,8 +25,8 @@ export class DynamoDBHandler implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let tableName = `${config.parentName}-${this.data.tableName}-Table`;
-        const adjustedProps = Object.assign(this.data, {
+        let tableName = `${config.parentName}-${this.data.tableName}`;
+        const adjustedProps = Object.assign( {}, this.data, {
             tableName: tableName,
             removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
