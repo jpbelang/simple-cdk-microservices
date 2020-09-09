@@ -58,7 +58,7 @@ export class DynamoConfigurator extends DefaultConfigurator {
 
     setEnvironment(setter: (key: string, value: string) => void) {
 
-        setter(`dynamo_${this.tablename}`, `${this.id}-Table`)
+        setter(`dynamo_${this.tablename}`, `${this.id}`)
     }
 
     grantSecurityTo(grantable: IGrantable) {
