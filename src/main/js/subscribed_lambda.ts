@@ -1,7 +1,7 @@
 
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import * as lambda from "@aws-cdk/aws-lambda";
-import {SubscriptionFilter, Topic} from "@aws-cdk/aws-sns"
+import {SubscriptionFilter, Topic, ITopic} from "@aws-cdk/aws-sns"
 import {Queue} from "@aws-cdk/aws-sqs"
 
 import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
@@ -20,8 +20,8 @@ export class SimpleLambdaSubscribed implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${config.parentName}-${this.data.handler}`;
-        const func = new lambda.Function(config.parentConstruct, id + "foo", this.data)
+        let id = `${this.data.handler}`;
+        const func = new lambda.Function(config.parentConstruct, id, this.data)
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
@@ -56,7 +56,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
         z.grantSecurityTo(this.func)
     }
 
-    listenToServiceTopic(topic: Topic) {
+    listenToServiceTopic(topic: ITopic) {
 
         const subscription = new LambdaSubscription(this.func, {deadLetterQueue: this.deadLetterQueue, filterPolicy: {
             "event-name": SubscriptionFilter.stringFilter({

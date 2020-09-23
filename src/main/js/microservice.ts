@@ -1,7 +1,7 @@
 
 import {IEventSource} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
-import {Topic} from "@aws-cdk/aws-sns";
+import {Topic, ITopic} from "@aws-cdk/aws-sns";
 import {Construct} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
 
@@ -16,7 +16,7 @@ export interface Configurator {
     grantSecurityTo(grantable: IGrantable): void
     receiveInternalEvents(setter: (source: IEventSource) => void): void
 
-    listenToServiceTopic(topic: Topic): void;
+    listenToServiceTopic(topic: ITopic): void;
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -45,7 +45,7 @@ export class DefaultConfigurator implements Configurator {
     wantSecurity(z: Configurator): void {
     }
 
-    listenToServiceTopic(topic: Topic): void {
+    listenToServiceTopic(topic: ITopic): void {
     }
 
 
@@ -59,7 +59,7 @@ export interface Handler {
 }
 
 export interface ServiceListener {
-    topic(): Topic
+    topic(): ITopic
     listensForEventsFrom(services: ServiceListener[]): void
 }
 
@@ -80,7 +80,7 @@ export class Microservice implements ServiceListener {
         this.data = data
     }
 
-    topic(): Topic {
+    topic(): ITopic {
         return this.data.topic;
     }
 

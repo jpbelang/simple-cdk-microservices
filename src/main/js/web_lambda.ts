@@ -116,7 +116,7 @@ export class WebLambda implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${config.parentName}-${this.data.handler}`;
+        let id = `${this.data.handler}`;
         const func = new Function(config.parentConstruct, id, this.data)
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
