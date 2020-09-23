@@ -1,6 +1,7 @@
 {
   "name": "simple-cdk-microservices",
-  "version": "1.0.0",
+  "version": "0.0.1",
+  "private": true,
   "description": "",
   "main": "dist/main/js/index.js",
   "types": "dist/main/js/index.d.ts",
@@ -26,7 +27,7 @@
     "tslint-microsoft-contrib": "^6.0.0",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
-    "@aws-cdk/assert": "1.60.0",
+    "@aws-cdk/assert": "1.63.0",
     "@types/jest-when": "^2.7.1",
     "jest-when": "^2.7.2",
     "jest": "^26.4.2",
@@ -35,17 +36,17 @@
   },
   "dependencies": {
     "typescript-optional": "^2.0.1",
-    "@aws-cdk/aws-apigateway": "1.60.0",
-    "@aws-cdk/aws-dynamodb": "1.60.0",
-    "@aws-cdk/aws-sns-subscriptions": "1.60.0",
-    "@aws-cdk/aws-lambda": "1.60.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.60.0"
+    "@aws-cdk/aws-apigateway": "1.63.0",
+    "@aws-cdk/aws-dynamodb": "1.63.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.63.0",
+    "@aws-cdk/aws-lambda": "1.63.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.63.0"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-apigateway": "1.60.0",
-    "@aws-cdk/aws-dynamodb": "1.60.0",
-    "@aws-cdk/aws-sns-subscriptions": "1.60.0",
-    "@aws-cdk/aws-lambda": "1.60.0",
-    "@aws-cdk/aws-lambda-event-sources": "1.60.0"
+    "@aws-cdk/aws-apigateway": "1.63.0",
+    "@aws-cdk/aws-dynamodb": "1.63.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.63.0",
+    "@aws-cdk/aws-lambda": "1.63.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.63.0"
   }
 }
