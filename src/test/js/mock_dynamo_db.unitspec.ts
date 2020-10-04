@@ -60,7 +60,7 @@ describe("mock dynamo db testing", () => {
                 value = v
             }))
             expect(key).toBe("dynamo_myTable")
-            expect(value).toBe("hola-myTable-Table")
+            expect(value).toBe("hola-myTable")
         })
 
         it("post configuration", () => {

@@ -1,15 +1,24 @@
-
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import * as lambda from "@aws-cdk/aws-lambda";
-import {SubscriptionFilter, Topic, ITopic} from "@aws-cdk/aws-sns"
+import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns"
 import {Queue} from "@aws-cdk/aws-sqs"
 
 import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
+import {Optional} from "typescript-optional";
 
 type HandlerData = {
     topicEvents: string[]
 } & lambda.FunctionProps
 
+
+function adjustData(data: HandlerData, deadLetterQueue: Queue) {
+
+    return Object.assign({}, data, {
+        deadLetterQueueEnabled: Optional.ofNullable(data.deadLetterQueueEnabled).orElse(true),
+        deadLetterQueue: Optional.ofNullable(data.deadLetterQueue).orElse(deadLetterQueue),
+        retryAttempts: Optional.ofNullable(data.retryAttempts).orElse(1)
+    } as HandlerData)
+}
 
 export class SimpleLambdaSubscribed implements Handler {
     private data: HandlerData;
@@ -21,12 +30,11 @@ export class SimpleLambdaSubscribed implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         let id = `${this.data.handler}`;
-        const func = new lambda.Function(config.parentConstruct, id, this.data)
-        config.topic.grantPublish(func)
-        config.deadLetterQueue.grantSendMessages(func)
+        const data = adjustData(this.data, config.deadLetterQueue)
+        const func = new lambda.Function(config.parentConstruct, id, data)
         func.addEnvironment("output", config.topic.topicArn)
 
-        return new LambdaConfigurator(id, func, config.deadLetterQueue, this.data.topicEvents)
+        return new LambdaConfigurator(id, func, config.deadLetterQueue, data.topicEvents)
     }
 
     static create(data: HandlerData) {
@@ -58,11 +66,13 @@ export class LambdaConfigurator extends DefaultConfigurator {
 
     listenToServiceTopic(topic: ITopic) {
 
-        const subscription = new LambdaSubscription(this.func, {deadLetterQueue: this.deadLetterQueue, filterPolicy: {
-            "event-name": SubscriptionFilter.stringFilter({
-                whitelist:this.events
-            })
-        }})
+        const subscription = new LambdaSubscription(this.func, {
+            filterPolicy: {
+                "event-name": SubscriptionFilter.stringFilter({
+                    whitelist: this.events
+                })
+            }
+        })
         topic.addSubscription(subscription)
     }
 };

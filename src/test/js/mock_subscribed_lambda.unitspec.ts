@@ -66,7 +66,6 @@ describe("mock subscribed lambda testing", () => {
                 runtime: Runtime, code: AssetCode.fromInline("doodah")
             })
 
-            const actualFunction = Function.prototype.constructor() as Function
             let theStack = new Stack();
             const configurator = lh.handle({
                 deadLetterQueue: new Queue(theStack, "dead"),
@@ -78,8 +77,6 @@ describe("mock subscribed lambda testing", () => {
             })
 
             expect(addEnvironmentMock.mock.calls[0]).toEqual(["output", "some::topic::arn"])
-            expect(grantPublishMock.mock.calls[0][0]).toEqual(actualFunction)
-            expect(sendMessageMock.mock.calls[0][0]).toEqual(actualFunction)
 
             configurator.wantEnvironment({
                 id: "", setEnvironment(setter: (key: string, value: string) => void): void {
@@ -95,7 +92,7 @@ describe("mock subscribed lambda testing", () => {
             });
 
             expect(addEnvironmentMock.mock.calls[1]).toEqual(["hello", "goodbye"])
-            expect(configurator.id).toEqual("hola-my_lambda")
+            expect(configurator.id).toEqual("my_lambda")
         })
 
         it("post configuration", () => {
