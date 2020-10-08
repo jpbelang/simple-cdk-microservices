@@ -110,7 +110,7 @@ export class MicroserviceBuilder {
         })
 
         const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
-                queueName: this.data.name + "DeadLetterTopic"
+                queueName: this.data.name + "DeadLetterQueue"
             }
         )
 
