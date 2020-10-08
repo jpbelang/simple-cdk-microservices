@@ -71,7 +71,8 @@ export class LambdaConfigurator extends DefaultConfigurator {
                 "event-name": SubscriptionFilter.stringFilter({
                     whitelist: this.events
                 })
-            }
+            },
+            deadLetterQueue: this.deadLetterQueue
         })
         topic.addSubscription(subscription)
     }
