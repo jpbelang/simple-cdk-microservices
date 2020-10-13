@@ -51,7 +51,7 @@ export class DefaultConfigurator implements Configurator {
 
 }
 
-export type HandlerOptions = { parentName: string; deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
+export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
 
 export interface Handler {
 
@@ -65,6 +65,7 @@ export interface ServiceListener {
 
 
 type MicroserviceData = {
+    env: string
     parentName: string
     deadLetterQueue: Queue
     topic: Topic
@@ -92,7 +93,8 @@ export class Microservice implements ServiceListener {
 }
 
 type MicroserviceBuilderData = {
-    name: string
+    name: string,
+    env: string,
     handlers: Handler[]
 }
 
@@ -115,6 +117,7 @@ export class MicroserviceBuilder {
         )
 
         const configurators = this.data.handlers.map(h => h.handle({
+            env: this.data.env,
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,
@@ -127,6 +130,7 @@ export class MicroserviceBuilder {
             c.wantInternalEventsSource(e)
         }))
         return new Microservice({
+            env: this.data.env,
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,

@@ -68,6 +68,7 @@ describe("mock subscribed lambda testing", () => {
 
             let theStack = new Stack();
             const configurator = lh.handle({
+                env: "Dev",
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
@@ -91,7 +92,8 @@ describe("mock subscribed lambda testing", () => {
 
             });
 
-            expect(addEnvironmentMock.mock.calls[1]).toEqual(["hello", "goodbye"])
+            expect(addEnvironmentMock.mock.calls[2]).toEqual(["hello", "goodbye"])
+            expect(addEnvironmentMock.mock.calls[1]).toEqual(["env", "Dev"])
             expect(configurator.id).toEqual("my_lambda")
         })
 

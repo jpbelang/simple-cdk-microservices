@@ -28,6 +28,7 @@ describe("web lambda testing", () => {
             })
 
             lh.handle({
+                env: "Dev",
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",

@@ -121,6 +121,7 @@ export class WebLambda implements Handler {
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
+        func.addEnvironment("env", config.env)
 
         configureTree(func, this.data.topResource, this.data.resourceTree)
 

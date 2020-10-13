@@ -15,6 +15,7 @@ export class ExampleStack extends Stack {
         const me = new RestApi(this, "GW");
         // The code that defines your stack goes here
         const service1 = MicroserviceBuilder.microservice({
+            env: "Dev",
             name: "first-example",
             handlers: [
                 DynamoDBHandler.create({
@@ -44,7 +45,8 @@ export class ExampleStack extends Stack {
         }).build(this);
 
 
-       const service2 =  MicroserviceBuilder.microservice({
+        const service2 = MicroserviceBuilder.microservice({
+            env: "Prod",
             name: "second-example",
             handlers: [
                 DynamoDBHandler.create({
@@ -61,6 +63,6 @@ export class ExampleStack extends Stack {
             ]
         }).build(this);
 
-       service1.listensForEventsFrom([service2])
+        service1.listensForEventsFrom([service2])
     }
 }

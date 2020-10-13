@@ -33,6 +33,7 @@ export class SimpleLambdaSubscribed implements Handler {
         const data = adjustData(this.data, config.deadLetterQueue)
         const func = new lambda.Function(config.parentConstruct, id, data)
         func.addEnvironment("output", config.topic.topicArn)
+        func.addEnvironment("env", config.env)
 
         return new LambdaConfigurator(id, func, config.deadLetterQueue, data.topicEvents)
     }

@@ -19,6 +19,7 @@ describe("dynamo db testing", () => {
 
             let theStack = new Stack();
             lh.handle({
+                env: "Dev",
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",

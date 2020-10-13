@@ -19,6 +19,7 @@ export class DynamoStreamLambda implements Handler {
         config.topic.grantPublish(func)
         config.deadLetterQueue.grantSendMessages(func)
         func.addEnvironment("output", config.topic.topicArn)
+        func.addEnvironment("env", config.env)
         return new LambdaConfigurator(id, func)
     }
 

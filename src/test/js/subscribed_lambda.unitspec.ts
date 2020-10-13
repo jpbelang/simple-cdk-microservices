@@ -1,4 +1,4 @@
-import {SimpleLambdaSubscribed} from "../../main/js/subscribed_lambda";
+import {SimpleLambdaSubscribed} from "../../main/js";
 import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic} from "@aws-cdk/aws-sns";
@@ -18,6 +18,7 @@ describe("subscribed lambda testing", () => {
 
             let theStack = new Stack();
             lh.handle({
+                env: "Dev",
                 deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
