@@ -111,7 +111,7 @@ export class MicroserviceBuilder {
             topicName: this.data.name + "Topic"
         })
 
-        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterQueue", {
+        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
                 queueName: this.data.name + "DeadLetterQueue"
             }
         )
