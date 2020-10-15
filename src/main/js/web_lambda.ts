@@ -45,11 +45,14 @@ class SimpleLambdaSubscribed(RequestHandler):
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
 import {IResource, LambdaIntegration} from "@aws-cdk/aws-apigateway";
+import * as lambda from "@aws-cdk/aws-lambda";
+import {Optional} from "typescript-optional";
+import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
 type HandlerData = {
     resourceTree: ResourceTree
     topResource: IResource
-} & FunctionProps
+} & LambdaSupportProps
 
 type MethodIntegrator = (methodName: string, resource: IResource, func: Function ) => void
 type ResourceIntegrator = (methodName: string, resource: IResource, func: Function ) => [IResource, ResourceTree]
@@ -118,15 +121,13 @@ export class WebLambda implements Handler {
 
         let id = `${this.data.handler}`;
         const func = new Function(config.parentConstruct, id, this.data)
-        config.topic.grantPublish(func)
-        config.deadLetterQueue.grantSendMessages(func)
-        func.addEnvironment("output", config.topic.topicArn)
-        func.addEnvironment("env", config.env)
+        configureFunction(this.data, config, func);
 
         configureTree(func, this.data.topResource, this.data.resourceTree)
 
         return new WebLambdaConfigurator(id, func)
     }
+
 
     static create(data: HandlerData) {
 

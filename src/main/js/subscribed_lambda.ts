@@ -5,10 +5,11 @@ import {Queue} from "@aws-cdk/aws-sqs"
 
 import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
 import {Optional} from "typescript-optional";
+import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
 type HandlerData = {
     topicEvents: string[]
-} & lambda.FunctionProps
+} & LambdaSupportProps
 
 
 function adjustData(data: HandlerData, deadLetterQueue: Queue) {
@@ -32,8 +33,7 @@ export class SimpleLambdaSubscribed implements Handler {
         let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue)
         const func = new lambda.Function(config.parentConstruct, id, data)
-        func.addEnvironment("output", config.topic.topicArn)
-        func.addEnvironment("env", config.env)
+        configureFunction(data, config, func);
 
         return new LambdaConfigurator(id, func, config.deadLetterQueue, data.topicEvents)
     }

@@ -1,9 +1,12 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
 import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
+import {Optional} from "typescript-optional";
+import * as lambda from "@aws-cdk/aws-lambda";
+import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
 type HandlerData = {
-} & FunctionProps
+} & LambdaSupportProps
 
 export class DynamoStreamLambda implements Handler {
     private data: HandlerData;
@@ -16,10 +19,7 @@ export class DynamoStreamLambda implements Handler {
 
         let id = `${this.data.handler}`;
         const func = new Function(config.parentConstruct, id, this.data)
-        config.topic.grantPublish(func)
-        config.deadLetterQueue.grantSendMessages(func)
-        func.addEnvironment("output", config.topic.topicArn)
-        func.addEnvironment("env", config.env)
+        configureFunction(this.data, config, func);
         return new LambdaConfigurator(id, func)
     }
 
