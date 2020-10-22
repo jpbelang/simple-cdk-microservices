@@ -7,24 +7,24 @@ import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
 import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
-type HandlerData = {
+export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
 } & LambdaSupportProps
 
 
-function adjustData(data: HandlerData, deadLetterQueue: Queue) {
+function adjustData(data: LambdaSubscribedHandlerData, deadLetterQueue: Queue) {
 
     return Object.assign({}, data, {
         deadLetterQueueEnabled: Optional.ofNullable(data.deadLetterQueueEnabled).orElse(true),
         deadLetterQueue: Optional.ofNullable(data.deadLetterQueue).orElse(deadLetterQueue),
         retryAttempts: Optional.ofNullable(data.retryAttempts).orElse(1)
-    } as HandlerData)
+    } as LambdaSubscribedHandlerData)
 }
 
 export class SimpleLambdaSubscribed implements Handler {
-    private data: HandlerData;
+    private data: LambdaSubscribedHandlerData;
 
-    constructor(data: HandlerData) {
+    constructor(data: LambdaSubscribedHandlerData) {
         this.data = data
     }
 
@@ -38,7 +38,7 @@ export class SimpleLambdaSubscribed implements Handler {
         return new LambdaConfigurator(id, func, config.deadLetterQueue, data.topicEvents)
     }
 
-    static create(data: HandlerData) {
+    static create(data: LambdaSubscribedHandlerData) {
 
         return new SimpleLambdaSubscribed(data)
     }

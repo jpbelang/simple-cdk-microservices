@@ -5,13 +5,13 @@ import {Optional} from "typescript-optional";
 import * as lambda from "@aws-cdk/aws-lambda";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
-type HandlerData = {
+export type DynamoStreamHandlerData = {
 } & LambdaSupportProps
 
 export class DynamoStreamLambda implements Handler {
-    private data: HandlerData;
+    private data: DynamoStreamHandlerData;
 
-    constructor(data: HandlerData) {
+    constructor(data: DynamoStreamHandlerData) {
         this.data = data
     }
 
@@ -23,7 +23,7 @@ export class DynamoStreamLambda implements Handler {
         return new LambdaConfigurator(id, func)
     }
 
-    static create(data: HandlerData) {
+    static create(data: DynamoStreamHandlerData) {
 
         return new DynamoStreamLambda(data)
     }

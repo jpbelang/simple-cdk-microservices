@@ -49,7 +49,7 @@ import * as lambda from "@aws-cdk/aws-lambda";
 import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
-type HandlerData = {
+export type WebHandlerData = {
     resourceTree: ResourceTree
     topResource: IResource
 } & LambdaSupportProps
@@ -111,9 +111,9 @@ export function configureTree(func: Function, resource: IResource, tree: Resourc
 }
 
 export class WebLambda implements Handler {
-    private readonly data: HandlerData;
+    private readonly data: WebHandlerData;
 
-    constructor(data: HandlerData) {
+    constructor(data: WebHandlerData) {
         this.data = data
     }
 
@@ -129,7 +129,7 @@ export class WebLambda implements Handler {
     }
 
 
-    static create(data: HandlerData) {
+    static create(data: WebHandlerData) {
 
         return new WebLambda(data)
     }

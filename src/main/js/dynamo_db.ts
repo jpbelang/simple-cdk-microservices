@@ -12,7 +12,7 @@ import {IEventSource, StartingPosition} from "@aws-cdk/aws-lambda";
 import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
 import * as lambda from "@aws-cdk/aws-lambda";
 
-type DynamoDBHandlerData = {
+export type DynamoDBHandlerData = {
     tableName: string
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
