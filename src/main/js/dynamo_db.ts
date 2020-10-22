@@ -10,10 +10,13 @@ import {IGrantable} from "@aws-cdk/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "@aws-cdk/aws-lambda";
 import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
+import * as lambda from "@aws-cdk/aws-lambda";
 
 type DynamoDBHandlerData = {
     tableName: string
     globalIndices?: [GlobalSecondaryIndexProps]
+    tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
+
 } & TableProps
 
 export class DynamoDBHandler implements Handler {
@@ -36,6 +39,7 @@ export class DynamoDBHandler implements Handler {
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {
             table.addGlobalSecondaryIndex(gsi)
         })
+        Optional.ofNullable(this.data.tableConfigurator).ifPresent(f => f(table, this.data, config))
         return new DynamoConfigurator(tableName, this.data.tableName, table)
     }
 
