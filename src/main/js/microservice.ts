@@ -75,7 +75,7 @@ type MicroserviceData = {
 }
 
 export class Microservice implements ServiceListener {
-    private data: MicroserviceData;
+    private readonly data: MicroserviceData;
 
     constructor(data: MicroserviceData) {
         this.data = data
@@ -85,6 +85,9 @@ export class Microservice implements ServiceListener {
         return this.data.topic;
     }
 
+    dlq(): Queue  {
+        return this.data.deadLetterQueue
+    }
 
     listensForEventsFrom(services: ServiceListener[]) {
 
