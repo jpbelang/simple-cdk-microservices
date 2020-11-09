@@ -1,6 +1,6 @@
 {
   "name": "@eloas/simple-cdk-microservices",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "description": "simple tools to create microservices in AWS",
   "main": "dist/main/js/index.js",
   "types": "dist/main/js/index.d.ts",

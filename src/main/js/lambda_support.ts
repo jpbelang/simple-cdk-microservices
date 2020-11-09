@@ -1,5 +1,6 @@
 import * as lambda from "@aws-cdk/aws-lambda";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
+import {ITopic} from '@aws-cdk/aws-sns'
 import {HandlerOptions} from "./microservice";
 import {Optional} from "typescript-optional";
 
@@ -15,3 +16,5 @@ export function configureFunction<T extends LambdaSupportProps>(data: T, config:
     func.addEnvironment("env", config.env)
     Optional.ofNullable(data.functionConfigurator).ifPresent(f => f(func, data, config))
 }
+
+export type EnvironmentInfo = { hostName: string, domainName: string, zoneId: string, aliasTarget: string, portalTopic: (actualId: string) => ITopic }
