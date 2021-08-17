@@ -4,6 +4,7 @@ import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic, ITopic} from "@aws-cdk/aws-sns";
 import {Construct} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
+import {Optional} from "typescript-optional";
 
 export interface Configurator {
     id: string
@@ -98,6 +99,7 @@ export class Microservice implements ServiceListener {
 type MicroserviceBuilderData = {
     name: string,
     env: string,
+    orderedOutput?: boolean
     handlers: Handler[]
 }
 
@@ -108,10 +110,15 @@ export class MicroserviceBuilder {
         this.data = data;
     }
 
+    private topicName(base: string) {
+
+        return Optional.ofNullable(this.data.orderedOutput).orElse(false)? base + ".fifo": base
+    }
+
     build(construct: Construct): Microservice {
 
         const serviceTopic = new Topic(construct, this.data.name + "Topic", {
-            topicName: this.data.name + "Topic"
+            topicName: this.topicName(this.data.name + "Topic")
         })
 
         const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
@@ -132,6 +139,7 @@ export class MicroserviceBuilder {
             c.wantSecurity(e)
             c.wantInternalEventsSource(e)
         }))
+
         return new Microservice({
             env: this.data.env,
             parentConstruct: construct,
