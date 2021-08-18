@@ -8,7 +8,7 @@ import '@aws-cdk/assert/jest';
 
 import {Stack} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
-import {Configurator} from "../../main/js/microservice";
+import {Configurator, DLQFactory} from "../../main/js/microservice";
 
 const {Runtime, AssetCode} = jest.requireActual("@aws-cdk/aws-lambda");
 
@@ -69,7 +69,15 @@ describe("mock subscribed lambda testing", () => {
             let theStack = new Stack();
             const configurator = lh.handle({
                 env: "Dev",
-                deadLetterQueue: new Queue(theStack, "dead"),
+                deadLetterQueue: new class implements DLQFactory {
+                    createFifo(): Queue {
+                        return new Queue(theStack, "dead")
+                    }
+
+                    createQueue(): Queue {
+                        return new Queue(theStack, "dead")
+                    }
+                },
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {

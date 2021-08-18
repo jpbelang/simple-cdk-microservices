@@ -11,7 +11,7 @@ export type LambdaSupportProps = {
 
 export function configureFunction<T extends LambdaSupportProps>(data: T, config: HandlerOptions, func: Function) {
     config.topic.grantPublish(func)
-    config.deadLetterQueue.grantSendMessages(func)
+    config.deadLetterQueue.createQueue().grantSendMessages(func)
     func.addEnvironment("output", config.topic.topicArn)
     func.addEnvironment("env", config.env)
     Optional.ofNullable(data.functionConfigurator).ifPresent(f => f(func, data, config))

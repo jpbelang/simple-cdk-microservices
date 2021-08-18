@@ -5,6 +5,7 @@ import '@aws-cdk/assert/jest';
 import {Stack} from "@aws-cdk/core";
 import {DynamoDBHandler} from "../../main/js/dynamo_db";
 import {AttributeType} from "@aws-cdk/aws-dynamodb";
+import {DLQFactory} from "../../main/js/microservice";
 
 
 describe("dynamo db testing", () => {
@@ -20,7 +21,15 @@ describe("dynamo db testing", () => {
             let theStack = new Stack();
             lh.handle({
                 env: "Dev",
-                deadLetterQueue: new Queue(theStack, "dead"),
+                deadLetterQueue: new class implements DLQFactory {
+                    createFifo(): Queue {
+                        return new Queue(theStack, "dead")
+                    }
+
+                    createQueue(): Queue {
+                        return new Queue(theStack, "dead")
+                    }
+                },
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {

@@ -1,11 +1,12 @@
-import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
+import {Configurator, DefaultConfigurator, DLQFactory, Handler, HandlerOptions} from "./microservice";
 import * as lambda from "@aws-cdk/aws-lambda";
 import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns"
 import {Queue} from "@aws-cdk/aws-sqs"
 
-import {LambdaSubscription} from "@aws-cdk/aws-sns-subscriptions";
+import {LambdaSubscription, SqsSubscription} from "@aws-cdk/aws-sns-subscriptions";
 import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
+import {SqsEventSource} from "@aws-cdk/aws-lambda-event-sources";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
@@ -31,7 +32,7 @@ export class SimpleLambdaSubscribed implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         let id = `${this.data.handler}`;
-        const data = adjustData(this.data, config.deadLetterQueue)
+        const data = adjustData(this.data, config.deadLetterQueue.createQueue())
         const func = new lambda.Function(config.parentConstruct, id, data)
         configureFunction(data, config, func);
 
@@ -47,10 +48,10 @@ export class SimpleLambdaSubscribed implements Handler {
 export class LambdaConfigurator extends DefaultConfigurator {
 
     private readonly func: lambda.Function;
-    private readonly deadLetterQueue: Queue
+    private readonly deadLetterQueue: DLQFactory
     private readonly events: string[]
 
-    constructor(id: string, func: lambda.Function, deadLetterQueue: Queue, events: string[]) {
+    constructor(id: string, func: lambda.Function, deadLetterQueue: DLQFactory, events: string[]) {
         super(id);
         this.func = func;
         this.deadLetterQueue = deadLetterQueue
@@ -67,14 +68,36 @@ export class LambdaConfigurator extends DefaultConfigurator {
 
     listenToServiceTopic(topic: ITopic) {
 
-        const subscription = new LambdaSubscription(this.func, {
-            filterPolicy: {
-                "event-name": SubscriptionFilter.stringFilter({
-                    whitelist: this.events
-                })
-            },
-            deadLetterQueue: this.deadLetterQueue
-        })
-        topic.addSubscription(subscription)
+        if (topic.topicName.endsWith(".fifo")) {
+
+            const id = `${topic.topicName}To${this.func.functionName}QueueId`
+            const name = `${topic.topicName}To${this.func.functionName}Queue.fifo`
+            const fifo = new Queue(this.func.stack, id, {
+                fifo: true,
+                queueName: name,
+                deadLetterQueue: {
+                    queue: this.deadLetterQueue.createFifo(),
+                    maxReceiveCount: 2
+                }
+            })
+
+            const subscription = new SqsSubscription(fifo, {
+                deadLetterQueue: this.deadLetterQueue.createFifo()
+            })
+            topic.addSubscription(subscription)
+
+            const source = new SqsEventSource(fifo)
+            this.func.addEventSource(source)
+        } else {
+            const subscription = new LambdaSubscription(this.func, {
+                filterPolicy: {
+                    "event-name": SubscriptionFilter.stringFilter({
+                        whitelist: this.events
+                    })
+                },
+                deadLetterQueue: this.deadLetterQueue.createQueue()
+            })
+            topic.addSubscription(subscription)
+        }
     }
-};
+}
