@@ -52,13 +52,7 @@ export class DefaultConfigurator implements Configurator {
 
 }
 
-export interface DLQFactory {
-
-    createFifo(): Queue
-    createQueue(): Queue
-}
-
-export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: DLQFactory; topic: Topic; parentConstruct: Construct }
+export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
 
 export interface Handler {
 
@@ -74,7 +68,7 @@ export interface ServiceListener {
 type MicroserviceData = {
     env: string
     parentName: string
-    deadLetterQueue: DLQFactory
+    deadLetterQueue: Queue
     topic: Topic
     parentConstruct: Construct
     handlers: Handler[]
@@ -93,8 +87,7 @@ export class Microservice implements ServiceListener {
     }
 
     dlq(): Queue  {
-        // todo fix this
-        return this.data.deadLetterQueue.createQueue()
+        return this.data.deadLetterQueue
     }
 
     listensForEventsFrom(services: ServiceListener[]) {
@@ -125,45 +118,20 @@ export class MicroserviceBuilder {
     build(construct: Construct): Microservice {
 
         const serviceTopic = new Topic(construct, this.data.name + "Topic", {
-            topicName: this.topicName(this.data.name + "Topic"),
-            fifo: Optional.ofNullable(this.data.orderedOutput).orElse(false)
+            topicName: this.topicName(this.data.name + "Topic")
         })
 
-        const data = this.data
-        const dlqFactory: DLQFactory = new class implements DLQFactory {
-            private fifo: Queue
-            private queue: Queue
-
-            createFifo(): Queue {
-                if ( this.fifo == undefined) {
-                    this.fifo = new Queue(construct, data.name + "DeadLetterTopic.fifo", {
-                            queueName: data.name + "DeadLetterQueue.fifo",
-                            fifo: true
-                        }
-                    )
-                }
-
-                return this.fifo
+        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
+                queueName: this.data.name + "DeadLetterQueue"
             }
-
-            createQueue(): Queue {
-                if ( this.queue == undefined) {
-                    this.queue = new Queue(construct, data.name + "DeadLetterTopic", {
-                            queueName: data.name + "DeadLetterQueue"
-                        }
-                    )
-                }
-
-                return this.queue
-            }
-        }
+        )
 
         const configurators = this.data.handlers.map(h => h.handle({
             env: this.data.env,
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,
-            deadLetterQueue: dlqFactory,
+            deadLetterQueue: deadLetterQueue,
         }))
 
         configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
@@ -177,7 +145,7 @@ export class MicroserviceBuilder {
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,
-            deadLetterQueue: dlqFactory,
+            deadLetterQueue: deadLetterQueue,
             handlers: this.data.handlers,
             configurators: configurators
         })

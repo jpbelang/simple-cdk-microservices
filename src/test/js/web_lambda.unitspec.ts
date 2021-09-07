@@ -6,7 +6,6 @@ import '@aws-cdk/assert/jest';
 import {Stack} from "@aws-cdk/core";
 import {simpleMethod, WebLambda} from "../../main/js/web_lambda";
 import {RestApi} from "@aws-cdk/aws-apigateway";
-import {DLQFactory} from "../../main/js/microservice";
 
 
 describe("web lambda testing", () => {
@@ -30,15 +29,7 @@ describe("web lambda testing", () => {
 
             lh.handle({
                 env: "Dev",
-                deadLetterQueue: new class implements DLQFactory {
-                    createFifo(): Queue {
-                        return new Queue(theStack, "dead")
-                    }
-
-                    createQueue(): Queue {
-                        return new Queue(theStack, "dead")
-                    }
-                },
+                deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {

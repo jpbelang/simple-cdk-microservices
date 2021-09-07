@@ -4,7 +4,6 @@ import '@aws-cdk/assert/jest';
 import {Stack} from "@aws-cdk/core";
 import {Table} from "@aws-cdk/aws-dynamodb";
 import {DynamoConfigurator, DynamoDBHandler} from "../../main/js/dynamo_db";
-import {DLQFactory} from "../../main/js/microservice";
 
 const {Runtime, AssetCode} = jest.requireActual("@aws-cdk/aws-lambda");
 const {AttributeType} = jest.requireActual("@aws-cdk/aws-dynamodb");
@@ -45,15 +44,7 @@ describe("mock dynamo db testing", () => {
             let theStack = new Stack();
             const configurator: DynamoConfigurator= lh.handle({
                 env: "Dev",
-                deadLetterQueue: new class implements DLQFactory {
-                    createFifo(): Queue {
-                        return new Queue(theStack, "dead")
-                    }
-
-                    createQueue(): Queue {
-                        return new Queue(theStack, "dead")
-                    }
-                },
+                deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {

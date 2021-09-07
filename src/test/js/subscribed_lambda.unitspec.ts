@@ -5,7 +5,6 @@ import {Topic} from "@aws-cdk/aws-sns";
 import '@aws-cdk/assert/jest';
 
 import {Stack} from "@aws-cdk/core";
-import {DLQFactory} from "../../main/js/microservice";
 
 
 describe("subscribed lambda testing", () => {
@@ -20,23 +19,7 @@ describe("subscribed lambda testing", () => {
             let theStack = new Stack();
             lh.handle({
                 env: "Dev",
-                deadLetterQueue: new class implements DLQFactory {
-
-                    private queue: Queue
-                    createFifo(): Queue {
-                        if ( !this.queue ) {
-                            this.queue = new Queue(theStack, "deadFifo")
-                        }
-                        return this.queue;
-                    }
-
-                    createQueue(): Queue {
-                        if ( !this.queue ) {
-                            this.queue = new Queue(theStack, "dead")
-                        }
-                        return this.queue;
-                    }
-                },
+                deadLetterQueue: new Queue(theStack, "dead"),
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {
