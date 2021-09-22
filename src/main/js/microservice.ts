@@ -4,6 +4,7 @@ import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic, ITopic} from "@aws-cdk/aws-sns";
 import {Construct} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
+import {Optional} from "typescript-optional";
 
 export interface Configurator {
     id: string
@@ -16,7 +17,7 @@ export interface Configurator {
     grantSecurityTo(grantable: IGrantable): void
     receiveInternalEvents(setter: (source: IEventSource) => void): void
 
-    listenToServiceTopic(topic: ITopic): void;
+    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean): void;
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -45,7 +46,7 @@ export class DefaultConfigurator implements Configurator {
     wantSecurity(z: Configurator): void {
     }
 
-    listenToServiceTopic(topic: ITopic): void {
+    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean): void {
     }
 
 
@@ -60,12 +61,14 @@ export interface Handler {
 
 export interface ServiceListener {
     topic(): ITopic
+    isTopicFifo(): boolean
     listensForEventsFrom(services: ServiceListener[]): void
 }
 
 
 type MicroserviceData = {
-    env: string
+    env: string,
+    orderedEvents: boolean,
     parentName: string
     deadLetterQueue: Queue
     topic: Topic
@@ -89,15 +92,21 @@ export class Microservice implements ServiceListener {
         return this.data.deadLetterQueue
     }
 
+    isTopicFifo(): boolean {
+        return this.data.orderedEvents;
+    }
+
+
     listensForEventsFrom(services: ServiceListener[]) {
 
-        services.forEach(s => this.data.configurators.forEach(x => x.listenToServiceTopic(s.topic())))
+        services.forEach(s => this.data.configurators.forEach(x => x.listenToServiceTopic(s.topic(), s.isTopicFifo())))
     }
 }
 
 type MicroserviceBuilderData = {
     name: string,
     env: string,
+    orderedEvents?: boolean,
     handlers: Handler[]
 }
 
@@ -110,14 +119,30 @@ export class MicroserviceBuilder {
 
     build(construct: Construct): Microservice {
 
-        const serviceTopic = new Topic(construct, this.data.name + "Topic", {
-            topicName: this.data.name + "Topic"
-        })
+        const orderedEvents = Optional.ofNullable(this.data.orderedEvents).orElse(false)
+        let serviceTopic: Topic;
+        let deadLetterQueue: Queue;
 
-        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
+
+        deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
                 queueName: this.data.name + "DeadLetterQueue"
             }
         )
+
+        if (orderedEvents) {
+
+            serviceTopic = new Topic(construct, this.data.name + "Topic", {
+                topicName: this.data.name + "Topic.fifo",
+                fifo: true
+            })
+
+        } else {
+
+            serviceTopic = new Topic(construct, this.data.name + "Topic", {
+                topicName: this.data.name + "Topic"
+            })
+
+        }
 
         const configurators = this.data.handlers.map(h => h.handle({
             env: this.data.env,
@@ -134,6 +159,7 @@ export class MicroserviceBuilder {
         }))
         return new Microservice({
             env: this.data.env,
+            orderedEvents: orderedEvents,
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,
