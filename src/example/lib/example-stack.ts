@@ -17,6 +17,7 @@ export class ExampleStack extends Stack {
         const service1 = MicroserviceBuilder.microservice({
             env: "Dev",
             name: "first-example",
+            orderedEvents: true,
             handlers: [
                 DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
@@ -26,7 +27,7 @@ export class ExampleStack extends Stack {
                 SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
                     runtime: Runtime.NODEJS_12_X,
-                    code: AssetCode.fromAsset("/Users/jpbelang/Capsana/portal-lambda/portal-cdk-ts/assets/mail-service-1.0.0-SNAPSHOT.zip"),
+                    code: AssetCode.fromInline("/Users/jpbelang/Capsana/portal-lambda/portal-cdk-ts/assets/mail-service-1.0.0-SNAPSHOT.zip"),
                     handler: "my_lambda"
                 }),
                 WebLambda.create({
@@ -48,6 +49,7 @@ export class ExampleStack extends Stack {
         const service2 = MicroserviceBuilder.microservice({
             env: "Prod",
             name: "second-example",
+            orderedEvents: true,
             handlers: [
                 DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},

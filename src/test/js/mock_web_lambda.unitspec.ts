@@ -81,7 +81,7 @@ describe("mock web lambda testing", () => {
 
             const actualFunction = Function.prototype.constructor() as Function
 
-            const configurator = new LambdaConfigurator("foo", actualFunction, null as any, [])
+            const configurator = new LambdaConfigurator("foo", actualFunction, null as any, null as any)
             configurator.wantEnvironment({
                 id: "",
                 setEnvironment(setter: (key: string, value: string) => void): void {

@@ -1,6 +1,6 @@
 {
   "name": "@eloas/simple-cdk-microservices",
-  "version": "1.94.1",
+  "version": "1.121.0",
   "description": "simple tools to create microservices in AWS",
   "main": "dist/main/js/index.js",
   "types": "dist/main/js/index.d.ts",
@@ -27,7 +27,7 @@
     "tslint-microsoft-contrib": "^6.0.0",
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
-    "@aws-cdk/assert": "1.94.1",
+    "@aws-cdk/assert": "1.121.0",
     "@types/jest-when": "^2.7.1",
     "jest-when": "^2.7.2",
     "jest": "^26.4.2",
@@ -36,17 +36,17 @@
   },
   "dependencies": {
     "typescript-optional": "^2.0.1",
-    "@aws-cdk/aws-apigateway": "1.94.1",
-    "@aws-cdk/aws-dynamodb": "1.94.1",
-    "@aws-cdk/aws-sns-subscriptions": "1.94.1",
-    "@aws-cdk/aws-lambda": "1.94.1",
-    "@aws-cdk/aws-lambda-event-sources": "1.94.1"
+    "@aws-cdk/aws-apigateway": "1.121.0",
+    "@aws-cdk/aws-dynamodb": "1.121.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.121.0",
+    "@aws-cdk/aws-lambda": "1.121.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.121.0"
   },
   "peerDependencies": {
-    "@aws-cdk/aws-apigateway": "1.94.1",
-    "@aws-cdk/aws-dynamodb": "1.94.1",
-    "@aws-cdk/aws-sns-subscriptions": "1.94.1",
-    "@aws-cdk/aws-lambda": "1.94.1",
-    "@aws-cdk/aws-lambda-event-sources": "1.94.1"
+    "@aws-cdk/aws-apigateway": "1.121.0",
+    "@aws-cdk/aws-dynamodb": "1.121.0",
+    "@aws-cdk/aws-sns-subscriptions": "1.121.0",
+    "@aws-cdk/aws-lambda": "1.121.0",
+    "@aws-cdk/aws-lambda-event-sources": "1.121.0"
   }
 }
