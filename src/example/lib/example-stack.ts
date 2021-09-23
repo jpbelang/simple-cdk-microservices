@@ -7,6 +7,7 @@ import {DynamoDBHandler} from "../../main/js";
 import {SimpleLambdaSubscribed} from "../../main/js";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {DynamoStreamLambda} from "../../main/js";
+import {AsyncLambda} from "../../main/js/async_local_lambda";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -19,6 +20,11 @@ export class ExampleStack extends Stack {
             name: "first-example",
             orderedEvents: true,
             handlers: [
+                AsyncLambda.create({
+                    runtime: Runtime.NODEJS_12_X,
+                    code: AssetCode.fromAsset("../../dist/example/apps"),
+                    handler: "async_app.worker"
+                }),
                 DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},

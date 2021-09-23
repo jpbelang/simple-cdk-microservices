@@ -36,6 +36,7 @@
     "src/test/js",
     "src/example/bin",
     "src/example/lib",
-    "src/example/test"
+    "src/example/test",
+    "src/example/apps"
   ]
 }
