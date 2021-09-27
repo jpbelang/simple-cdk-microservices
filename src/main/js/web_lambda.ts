@@ -1,7 +1,14 @@
 
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
-import {BasePathMapping, DomainName, IResource, LambdaIntegration, LambdaRestApi} from "@aws-cdk/aws-apigateway";
+import {
+    BasePathMapping,
+    CorsOptions,
+    DomainName,
+    IResource,
+    LambdaIntegration,
+    LambdaRestApi
+} from "@aws-cdk/aws-apigateway";
 import * as lambda from "@aws-cdk/aws-lambda";
 import {Optional} from "typescript-optional";
 import {configureFunction, EnvironmentInfo, LambdaSupportProps} from "./lambda_support";
@@ -14,6 +21,7 @@ export type DelegatedApiProps = {
     environmentInfo: EnvironmentInfo
     resourceTree: null
     basePath: string
+    defaultCorsPreflightOptions?: CorsOptions
 }
 
 
@@ -89,7 +97,8 @@ export class WebLambda implements Handler {
 
             const lra = new LambdaRestApi(config.parentConstruct, `${id}ApiGateway`, {
                 handler: func,
-                restApiName: `${config.parentName}-${this.data.basePath}`
+                restApiName: `${config.parentName}-${this.data.basePath}`,
+                defaultCorsPreflightOptions: this.data.defaultCorsPreflightOptions
             })
             const basePath = new BasePathMapping(config.parentConstruct, `${id}Mapping`, {
                 basePath: this.data.basePath,
