@@ -24,7 +24,7 @@ export class ExampleStack extends Stack {
             orderedEvents: false,
             handlers: [
                 AsyncLambda.create({
-                    runtime: Runtime.NODEJS_12_X,
+                    runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromAsset("../../dist/example/apps"),
                     handler: "async_app.worker",
                     tags: {
@@ -38,12 +38,12 @@ export class ExampleStack extends Stack {
                 }),
                 SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
-                    runtime: Runtime.NODEJS_12_X,
-                    code: AssetCode.fromInline("../../dist/example/apps"),
-                    handler: "my_lambda"
+                    runtime: Runtime.NODEJS_14_X,
+                    code: AssetCode.fromAsset("../../dist/example/apps"),
+                    handler: "my_lambda.worker"
                 }),
                 WebLambda.create({
-                    runtime: Runtime.NODEJS_12_X,
+                    runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "anotherLambda",
                     resourceTree: {

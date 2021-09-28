@@ -18,7 +18,7 @@ function adjustData(data: AsyncLambdaHandlerData, deadLetterQueue: Queue) {
     return Object.assign({}, data, {
         deadLetterQueueEnabled: Optional.ofNullable(data.deadLetterQueueEnabled).orElse(true),
         deadLetterQueue: Optional.ofNullable(data.deadLetterQueue).orElse(deadLetterQueue),
-        retryAttempts: Optional.ofNullable(data.retryAttempts).orElse(1)
+        retryAttempts: Optional.ofNullable(data.retryAttempts).orElse(1),
     } as AsyncLambdaHandlerData)
 }
 
@@ -35,13 +35,18 @@ export class AsyncLambda implements Handler {
         const data = adjustData(this.data, config.deadLetterQueue)
         const func = new lambda.Function(config.parentConstruct, id, data)
         const queue = new Queue(func, "queue-for-func", {
-            fifo: Optional.ofNullable(this.data.fifo).orUndefined()
+            fifo: Optional.ofNullable(this.data.fifo).orUndefined(),
+            deadLetterQueue: {
+                queue: config.deadLetterQueue,
+                maxReceiveCount: 2
+            }
         })
         func.addEventSource(new SqsEventSource(queue, {
             batchSize: 10
         }))
         queue.grantConsumeMessages(func)
         configureFunction(data, config, func);
+
         Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(queue).add(k,v, {
             priority: 101
         }))
@@ -62,7 +67,7 @@ export class AsyncLambdaConfigurator extends DefaultConfigurator {
     }
 
     setEnvironment(setter: (key: string, value: string) => void) {
-        setter(`async_${this.data.handler.replace(/\./, "_")}_Queue`, this.queue.queueArn)
+        setter(`async_${this.data.handler.replace(/\./, "_")}_Queue`, this.queue.queueUrl)
     }
 
     wantEnvironment(z: Configurator) {
