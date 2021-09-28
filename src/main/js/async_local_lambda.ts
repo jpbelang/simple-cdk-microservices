@@ -6,6 +6,7 @@ import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns";
 import {LambdaSubscription, SqsSubscription} from "@aws-cdk/aws-sns-subscriptions";
 import {SqsEventSource} from "@aws-cdk/aws-lambda-event-sources";
+import {IGrantable} from "@aws-cdk/aws-iam";
 
 export type AsyncLambdaHandlerData = {
     fifo?: boolean
@@ -64,11 +65,7 @@ export class AsyncLambdaConfigurator extends DefaultConfigurator {
         z.setEnvironment((k, v) => this.func.addEnvironment(k, v))
     }
 
-    wantSecurity(z: Configurator) {
-        z.grantSecurityTo(this.func)
-    }
-
-    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean) {
-
+    grantSecurityTo(grantable: IGrantable) {
+        this.queue.grantSendMessages(grantable)
     }
 }
