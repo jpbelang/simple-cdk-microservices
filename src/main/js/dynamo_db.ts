@@ -1,11 +1,11 @@
-import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice"
+import {Configurator, DefaultConfigurator, Handler, HandlerOptions, NonMandatoryTaggingType} from "./microservice"
 import {
     BillingMode,
     GlobalSecondaryIndexProps,
     Table,
     TableProps
 } from "@aws-cdk/aws-dynamodb"
-import {RemovalPolicy} from "@aws-cdk/core";
+import {RemovalPolicy, Tags} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "@aws-cdk/aws-lambda";
@@ -16,7 +16,7 @@ export type DynamoDBHandlerData = {
     tableName: string
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
-
+    tags?: NonMandatoryTaggingType
 } & TableProps
 
 export class DynamoDBHandler implements Handler {
@@ -40,6 +40,10 @@ export class DynamoDBHandler implements Handler {
             table.addGlobalSecondaryIndex(gsi)
         })
         Optional.ofNullable(this.data.tableConfigurator).ifPresent(f => f(table, this.data, config))
+
+        Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(table).add(k,v, {
+            priority: 101
+        }))
         return new DynamoConfigurator(tableName, this.data.tableName, table)
     }
 

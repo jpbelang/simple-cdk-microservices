@@ -2,7 +2,7 @@
 import {IEventSource} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic, ITopic} from "@aws-cdk/aws-sns";
-import {Construct} from "@aws-cdk/core";
+import {Construct, Tags} from "@aws-cdk/core";
 import {IGrantable} from "@aws-cdk/aws-iam"
 import {Optional} from "typescript-optional";
 
@@ -52,6 +52,9 @@ export class DefaultConfigurator implements Configurator {
 
 }
 
+export type TaggingType = { project: string } & { [key:string]:string; }
+export type NonMandatoryTaggingType = { [key:string]:string; }
+
 export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
 
 export interface Handler {
@@ -69,6 +72,7 @@ export interface ServiceListener {
 type MicroserviceData = {
     env: string,
     orderedEvents: boolean,
+    tags: TaggingType,
     parentName: string
     deadLetterQueue: Queue
     topic: Topic
@@ -106,6 +110,7 @@ export class Microservice implements ServiceListener {
 type MicroserviceBuilderData = {
     name: string,
     env: string,
+    tags: TaggingType,
     orderedEvents?: boolean,
     handlers: Handler[]
 }
@@ -157,6 +162,9 @@ export class MicroserviceBuilder {
             c.wantSecurity(e)
             c.wantInternalEventsSource(e)
         }))
+
+        Object.entries(this.data.tags).forEach( ([k,v]) => Tags.of(construct).add(k,v))
+
         return new Microservice({
             env: this.data.env,
             orderedEvents: orderedEvents,
@@ -165,7 +173,8 @@ export class MicroserviceBuilder {
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
             handlers: this.data.handlers,
-            configurators: configurators
+            configurators: configurators,
+            tags: this.data.tags
         })
     }
 

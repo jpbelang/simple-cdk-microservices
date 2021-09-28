@@ -7,6 +7,7 @@ import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns";
 import {LambdaSubscription, SqsSubscription} from "@aws-cdk/aws-sns-subscriptions";
 import {SqsEventSource} from "@aws-cdk/aws-lambda-event-sources";
 import {IGrantable} from "@aws-cdk/aws-iam";
+import {Tags} from "@aws-cdk/core";
 
 export type AsyncLambdaHandlerData = {
     fifo?: boolean
@@ -41,6 +42,9 @@ export class AsyncLambda implements Handler {
         }))
         queue.grantConsumeMessages(func)
         configureFunction(data, config, func);
+        Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(queue).add(k,v, {
+            priority: 101
+        }))
 
         return new AsyncLambdaConfigurator(id, func, queue, data, config)
     }

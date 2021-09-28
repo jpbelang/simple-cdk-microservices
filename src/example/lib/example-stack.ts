@@ -18,12 +18,18 @@ export class ExampleStack extends Stack {
         const service1 = MicroserviceBuilder.microservice({
             env: "Dev",
             name: "first-example",
+            tags: {
+                project: "IT"
+            },
             orderedEvents: false,
             handlers: [
                 AsyncLambda.create({
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromAsset("../../dist/example/apps"),
-                    handler: "async_app.worker"
+                    handler: "async_app.worker",
+                    tags: {
+                        project: "NotIT"
+                    }
                 }),
                 DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
@@ -55,6 +61,9 @@ export class ExampleStack extends Stack {
         const service2 = MicroserviceBuilder.microservice({
             env: "Prod",
             name: "second-example",
+            tags: {
+                project: "IT"
+            },
             orderedEvents: true,
             handlers: [
                 DynamoDBHandler.create({

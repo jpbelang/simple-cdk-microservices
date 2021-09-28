@@ -105,6 +105,8 @@ export class WebLambda implements Handler {
                 restApi: lra,
                 domainName: domainName
             })
+
+
         }
 
         return new WebLambdaConfigurator(id, func)
