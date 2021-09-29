@@ -1,4 +1,3 @@
-
 import {IEventSource} from "@aws-cdk/aws-lambda";
 import {Queue} from "@aws-cdk/aws-sqs";
 import {Topic, ITopic} from "@aws-cdk/aws-sns";
@@ -10,11 +9,15 @@ export interface Configurator {
     id: string
 
     wantSecurity(z: Configurator): void;
+
     wantEnvironment(z: Configurator): void;
+
     wantInternalEventsSource(z: Configurator): void
 
     setEnvironment(setter: (key: string, value: string) => void): void
+
     grantSecurityTo(grantable: IGrantable): void
+
     receiveInternalEvents(setter: (source: IEventSource) => void): void
 
     listenToServiceTopic(topic: ITopic, isTopicFifo: boolean): void;
@@ -52,10 +55,17 @@ export class DefaultConfigurator implements Configurator {
 
 }
 
-export type TaggingType = { project: string } & { [key:string]:string; }
-export type NonMandatoryTaggingType = { [key:string]:string; }
+export type TaggingType = { project: string } & { [key: string]: string; }
+export type NonMandatoryTaggingType = { [key: string]: string; }
 
-export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; deadLetterFifoQueue: Queue, topic: Topic; parentConstruct: Construct }
+export type HandlerOptions = {
+    parentName: string;
+    env: string,
+    deadLetterQueue(): Queue;
+    deadLetterFifoQueue(): Queue,
+    topic: Topic;
+    parentConstruct: Construct
+}
 
 export interface Handler {
 
@@ -64,7 +74,9 @@ export interface Handler {
 
 export interface ServiceListener {
     topic(): ITopic
+
     isTopicFifo(): boolean
+
     listensForEventsFrom(services: ServiceListener[]): void
 }
 
@@ -74,7 +86,8 @@ type MicroserviceData = {
     orderedEvents: boolean,
     tags: TaggingType,
     parentName: string
-    deadLetterQueue: Queue
+    deadLetterQueue: () => Queue
+    deadLetterFifoQueue: () => Queue
     topic: Topic
     parentConstruct: Construct
     handlers: Handler[]
@@ -92,8 +105,8 @@ export class Microservice implements ServiceListener {
         return this.data.topic;
     }
 
-    dlq(): Queue  {
-        return this.data.deadLetterQueue
+    dlq(): Queue {
+        return this.data.deadLetterQueue()
     }
 
     isTopicFifo(): boolean {
@@ -127,17 +140,6 @@ export class MicroserviceBuilder {
         const orderedEvents = Optional.ofNullable(this.data.orderedEvents).orElse(false)
         let serviceTopic: Topic;
 
-        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
-                queueName: this.data.name + "DeadLetterQueue"
-            }
-        )
-
-        const deadLetterFifoQueue = new Queue(construct, this.data.name + "DeadLetterTopicFifo", {
-                queueName: this.data.name + "DeadLetterQueue.fifo",
-                fifo: true
-            }
-        )
-
         if (orderedEvents) {
 
             serviceTopic = new Topic(construct, this.data.name + "Topic", {
@@ -153,14 +155,39 @@ export class MicroserviceBuilder {
 
         }
 
-        const configurators = this.data.handlers.map(h => h.handle({
-            env: this.data.env,
-            parentConstruct: construct,
-            parentName: this.data.name,
-            topic: serviceTopic,
-            deadLetterQueue: deadLetterQueue,
-            deadLetterFifoQueue: deadLetterFifoQueue
-        }))
+        let dlq: Queue
+        let dlfq: Queue
+        const deadLetterQueueFunction = () => {
+            if (dlq == undefined) {
+                dlq = new Queue(construct, this.data.name + "DeadLetterTopic", {
+                        queueName: this.data.name + "DeadLetterQueue"
+                    }
+                )
+            }
+
+            return dlq
+        };
+        const deadLetterFifoQueueFunction = () => {
+            if (dlfq == undefined) {
+                dlfq = new Queue(construct, this.data.name + "DeadLetterTopicFifo", {
+                        queueName: this.data.name + "DeadLetterQueue.fifo",
+                        fifo: true
+                    }
+                )
+            }
+            return dlfq
+        };
+
+        const configurators = this.data.handlers.map(h => {
+            return h.handle({
+                env: this.data.env,
+                parentConstruct: construct,
+                parentName: this.data.name,
+                topic: serviceTopic,
+                deadLetterQueue: deadLetterQueueFunction,
+                deadLetterFifoQueue: deadLetterFifoQueueFunction
+            });
+        })
 
         configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
             c.wantEnvironment(e)
@@ -168,7 +195,7 @@ export class MicroserviceBuilder {
             c.wantInternalEventsSource(e)
         }))
 
-        Object.entries(this.data.tags).forEach( ([k,v]) => Tags.of(construct).add(k,v))
+        Object.entries(this.data.tags).forEach(([k, v]) => Tags.of(construct).add(k, v))
 
         return new Microservice({
             env: this.data.env,
@@ -176,7 +203,8 @@ export class MicroserviceBuilder {
             parentConstruct: construct,
             parentName: this.data.name,
             topic: serviceTopic,
-            deadLetterQueue: deadLetterQueue,
+            deadLetterQueue: deadLetterQueueFunction,
+            deadLetterFifoQueue: deadLetterQueueFunction,
             handlers: this.data.handlers,
             configurators: configurators,
             tags: this.data.tags

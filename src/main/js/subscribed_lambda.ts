@@ -33,7 +33,7 @@ export class SimpleLambdaSubscribed implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         let id = `${this.data.handler}`;
-        const data = adjustData(this.data, config.deadLetterQueue)
+        const data = adjustData(this.data, config.deadLetterQueue())
         const func = new lambda.Function(config.parentConstruct, id, data)
         configureFunction(data, config, func);
 
@@ -70,7 +70,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
                 fifo: true,
                 queueName: `sequencingQueueFor${this.config.parentName}.fifo`,
                 deadLetterQueue: {
-                    queue: this.config.deadLetterFifoQueue,
+                    queue: this.config.deadLetterFifoQueue(),
                     maxReceiveCount: 2
                 }
             })
@@ -80,7 +80,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
                         whitelist: this.data.topicEvents
                     }),
                 },
-                deadLetterQueue: this.config.deadLetterFifoQueue,
+                deadLetterQueue: this.config.deadLetterFifoQueue(),
 
             })
             topic.addSubscription(queueSubscription)
@@ -93,7 +93,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
                         whitelist: this.data.topicEvents
                     })
                 },
-                deadLetterQueue: this.config.deadLetterQueue
+                deadLetterQueue: this.config.deadLetterQueue()
             })
             topic.addSubscription(subscription)
 

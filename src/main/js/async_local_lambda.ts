@@ -32,12 +32,12 @@ export class AsyncLambda implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         let id = `${this.data.handler}`;
-        const data = adjustData(this.data, config.deadLetterQueue)
+        const data = adjustData(this.data, config.deadLetterQueue())
         const func = new lambda.Function(config.parentConstruct, id, data)
         const queue = new Queue(func, "queue-for-func", {
             fifo: Optional.ofNullable(this.data.fifo).orUndefined(),
             deadLetterQueue: {
-                queue: config.deadLetterQueue,
+                queue: config.deadLetterQueue(),
                 maxReceiveCount: 2
             }
         })
