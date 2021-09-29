@@ -69,13 +69,19 @@ export class LambdaConfigurator extends DefaultConfigurator {
             const queue = new Queue(topic as any, this.config.parentName, {
                 fifo: true,
                 queueName: `sequencingQueueFor${this.config.parentName}.fifo`,
+                deadLetterQueue: {
+                    queue: this.config.deadLetterFifoQueue,
+                    maxReceiveCount: 2
+                }
             })
             const queueSubscription = new SqsSubscription(queue, {
                 filterPolicy: {
                     "event-name": SubscriptionFilter.stringFilter({
                         whitelist: this.data.topicEvents
                     }),
-                }
+                },
+                deadLetterQueue: this.config.deadLetterFifoQueue,
+
             })
             topic.addSubscription(queueSubscription)
             this.func.addEventSource(new SqsEventSource(queue))

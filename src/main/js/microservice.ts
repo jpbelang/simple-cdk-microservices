@@ -55,7 +55,7 @@ export class DefaultConfigurator implements Configurator {
 export type TaggingType = { project: string } & { [key:string]:string; }
 export type NonMandatoryTaggingType = { [key:string]:string; }
 
-export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; topic: Topic; parentConstruct: Construct }
+export type HandlerOptions = { parentName: string; env: string, deadLetterQueue: Queue; deadLetterFifoQueue: Queue, topic: Topic; parentConstruct: Construct }
 
 export interface Handler {
 
@@ -126,11 +126,15 @@ export class MicroserviceBuilder {
 
         const orderedEvents = Optional.ofNullable(this.data.orderedEvents).orElse(false)
         let serviceTopic: Topic;
-        let deadLetterQueue: Queue;
 
-
-        deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
+        const deadLetterQueue = new Queue(construct, this.data.name + "DeadLetterTopic", {
                 queueName: this.data.name + "DeadLetterQueue"
+            }
+        )
+
+        const deadLetterFifoQueue = new Queue(construct, this.data.name + "DeadLetterTopicFifo", {
+                queueName: this.data.name + "DeadLetterQueue.fifo",
+                fifo: true
             }
         )
 
@@ -155,6 +159,7 @@ export class MicroserviceBuilder {
             parentName: this.data.name,
             topic: serviceTopic,
             deadLetterQueue: deadLetterQueue,
+            deadLetterFifoQueue: deadLetterFifoQueue
         }))
 
         configurators.forEach((c) => configurators.filter(e => e.id != c.id).forEach(e => {
