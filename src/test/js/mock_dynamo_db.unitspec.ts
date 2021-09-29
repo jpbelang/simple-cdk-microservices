@@ -44,7 +44,8 @@ describe("mock dynamo db testing", () => {
             let theStack = new Stack();
             const configurator: DynamoConfigurator= lh.handle({
                 env: "Dev",
-                deadLetterQueue: new Queue(theStack, "dead"),
+                deadLetterQueue: () => new Queue(theStack, "dead"),
+                deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {

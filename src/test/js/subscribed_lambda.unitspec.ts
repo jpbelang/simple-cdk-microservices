@@ -19,8 +19,8 @@ describe("subscribed lambda testing", () => {
             let theStack = new Stack();
             lh.handle({
                 env: "Dev",
-                deadLetterQueue: new Queue(theStack, "dead"),
-                parentConstruct: theStack,
+                deadLetterQueue: () => new Queue(theStack, "dead"),
+                deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),                parentConstruct: theStack,
                 parentName: "hola",
                 topic: new Topic(theStack, "topic", {
                     topicName: "topicName"
