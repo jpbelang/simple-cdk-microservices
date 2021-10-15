@@ -1,13 +1,15 @@
 import {AttributeType, StreamViewType} from "@aws-cdk/aws-dynamodb";
 import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
 import {RestApi} from "@aws-cdk/aws-apigateway";
-import {Construct, Stack, StackProps} from "@aws-cdk/core";
+import {Construct, Duration, Stack, StackProps} from "@aws-cdk/core";
 import {MicroserviceBuilder} from "../../main/js";
 import {DynamoDBHandler} from "../../main/js";
 import {SimpleLambdaSubscribed} from "../../main/js";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {DynamoStreamLambda} from "../../main/js";
 import {AsyncLambda} from "../../main/js/async_local_lambda";
+import {LocalQueue} from "./local_queue";
+import {LocalQueueReceiver} from "./local_queue_receiver";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -80,6 +82,26 @@ export class ExampleStack extends Stack {
             ]
         }).build(this);
 
+        const service3 = MicroserviceBuilder.microservice({
+            env: "Prod",
+            name: "third-example",
+            tags: {
+                project: "IT"
+            },
+            orderedEvents: false,
+            handlers: [
+                LocalQueue.create({
+                    queueName: "FakePortalQueue",
+                    retentionPeriod: Duration.days(4)
+                }),
+                LocalQueueReceiver.create({
+                    code: AssetCode.fromAsset("../../dist/example/apps"),
+                    runtime: Runtime.NODEJS_12_X,
+                    deadLetterQueueEnabled: true,
+                    handler: "portail_transmit.portail_transmit_entry",
+                })
+            ]
+        }).build(this);
         service1.listensForEventsFrom([service2])
     }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@eloas/simple-cdk-microservices",
-  "version": "1.124.1",
+  "version": "1.124.2",
   "description": "simple tools to create microservices in AWS",
   "main": "dist/main/js/index.js",
   "types": "dist/main/js/index.d.ts",
@@ -18,7 +18,7 @@
   "license": "MIT",
   "devDependencies": {
     "typescript": "^3.9.7",
-    "@types/node": "14.14.31",
+    "@types/node": "11.9.6",
     "npm-run-all": "^4.1.5",
     "ts-loader": "^6.2.2",
     "ts-node": "^8.0.2",
