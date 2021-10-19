@@ -10,6 +10,8 @@ import {DynamoStreamLambda} from "../../main/js";
 import {AsyncLambda} from "../../main/js/async_local_lambda";
 import {LocalQueue} from "./local_queue";
 import {LocalQueueReceiver} from "./local_queue_receiver";
+import {TimerLambda} from "../../main/js/timer_lambda";
+import {Rule, Schedule, RuleTargetInput} from "@aws-cdk/aws-events"
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -78,30 +80,20 @@ export class ExampleStack extends Stack {
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "streamLambda"
+                }),
+                TimerLambda.create({
+                    runtime: Runtime.NODEJS_12_X,
+                    code: AssetCode.fromInline("doodah"),
+                    handler: "timerLambda",
+                    event: RuleTargetInput.fromText("thisevent"),
+                    schedule: Schedule.cron({
+                        hour: "1",
+                        minute: "0"
+                    })
                 })
             ]
         }).build(this);
 
-        const service3 = MicroserviceBuilder.microservice({
-            env: "Prod",
-            name: "third-example",
-            tags: {
-                project: "IT"
-            },
-            orderedEvents: false,
-            handlers: [
-                LocalQueue.create({
-                    queueName: "FakePortalQueue",
-                    retentionPeriod: Duration.days(4)
-                }),
-                LocalQueueReceiver.create({
-                    code: AssetCode.fromAsset("../../dist/example/apps"),
-                    runtime: Runtime.NODEJS_12_X,
-                    deadLetterQueueEnabled: true,
-                    handler: "portail_transmit.portail_transmit_entry",
-                })
-            ]
-        }).build(this);
         service1.listensForEventsFrom([service2])
     }
 }
