@@ -149,7 +149,8 @@ module.exports = {
   //   "**/?(*.)+(spec|test).[tj]s?(x)"
   // ],
   "roots": [
-    "<rootDir>/src/test/js"
+    "<rootDir>/src/test/js",
+    "<rootDir>/src/example/test"
   ],
   "testMatch": [
     "**/*.unitspec.ts"
