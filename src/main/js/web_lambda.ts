@@ -11,14 +11,14 @@ import {
 } from "@aws-cdk/aws-apigateway";
 import * as lambda from "@aws-cdk/aws-lambda";
 import {Optional} from "typescript-optional";
-import {configureFunction, EnvironmentInfo, LambdaSupportProps} from "./lambda_support";
+import {BaseEnvironmentInfo, configureFunction, EnvironmentInfo, LambdaSupportProps} from "./lambda_support";
 
 export type EnumeratedApiProps = {
     resourceTree: ResourceTree
     topResource: IResource
 }
 export type DelegatedApiProps = {
-    environmentInfo: EnvironmentInfo
+    environmentInfo?: BaseEnvironmentInfo
     resourceTree: null
     basePath: string
     defaultCorsPreflightOptions?: CorsOptions
@@ -87,26 +87,29 @@ export class WebLambda implements Handler {
         if ( this.data.resourceTree != null) {
             configureTree(func, this.data.topResource, this.data.resourceTree)
         } else {
-            let actualDomainName = this.data.environmentInfo;
-
-            const domainName = DomainName.fromDomainNameAttributes(config.parentConstruct, "imported-domain", {
-                domainName: actualDomainName.hostName + "." + actualDomainName.domainName,
-                domainNameAliasHostedZoneId: this.data.environmentInfo.zoneId,
-                domainNameAliasTarget: actualDomainName.aliasTarget
-            })
 
             const lra = new LambdaRestApi(config.parentConstruct, `${id}ApiGateway`, {
                 handler: func,
                 restApiName: `${config.parentName}-${this.data.basePath}`,
                 defaultCorsPreflightOptions: this.data.defaultCorsPreflightOptions
             })
-            const basePath = new BasePathMapping(config.parentConstruct, `${id}Mapping`, {
-                basePath: this.data.basePath,
-                restApi: lra,
-                domainName: domainName
-            })
+
+            if ( this.data.environmentInfo ) {
+                let actualDomainName = this.data.environmentInfo;
 
 
+                const domainName = DomainName.fromDomainNameAttributes(config.parentConstruct, "imported-domain", {
+                    domainName: actualDomainName.hostName + "." + actualDomainName.domainName,
+                    domainNameAliasHostedZoneId: this.data.environmentInfo.zoneId,
+                    domainNameAliasTarget: actualDomainName.aliasTarget
+                })
+
+                const basePath = new BasePathMapping(config.parentConstruct, `${id}Mapping`, {
+                    basePath: this.data.basePath,
+                    restApi: lra,
+                    domainName: domainName
+                })
+            }
         }
 
         return new WebLambdaConfigurator(id, func)

@@ -23,4 +23,5 @@ export function configureFunction<T extends LambdaSupportProps>(data: T, config:
     }))
 }
 
-export type EnvironmentInfo = { hostName: string, domainName: string, zoneId: string, aliasTarget: string, portalTopic: (actualId: string) => ITopic }
+export type BaseEnvironmentInfo = { hostName: string, domainName: string, zoneId: string, aliasTarget: string }
+export type EnvironmentInfo = BaseEnvironmentInfo & { portalTopic: (actualId: string) => ITopic }

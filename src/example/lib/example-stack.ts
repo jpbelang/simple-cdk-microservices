@@ -8,8 +8,6 @@ import {SimpleLambdaSubscribed} from "../../main/js";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {DynamoStreamLambda} from "../../main/js";
 import {AsyncLambda} from "../../main/js/async_local_lambda";
-import {LocalQueue} from "./local_queue";
-import {LocalQueueReceiver} from "./local_queue_receiver";
 import {TimerLambda} from "../../main/js/timer_lambda";
 import {Rule, Schedule, RuleTargetInput} from "@aws-cdk/aws-events"
 
@@ -57,6 +55,26 @@ export class ExampleStack extends Stack {
                     },
                     topResource: me.root
 
+                }),
+                WebLambda.create({
+                    runtime: Runtime.NODEJS_14_X,
+                    code: AssetCode.fromInline("doodah"),
+                    handler: "whole_tree",
+                    basePath: "banana",
+                    resourceTree: null
+                }),
+                WebLambda.create({
+                    runtime: Runtime.NODEJS_14_X,
+                    code: AssetCode.fromInline("doodah"),
+                    handler: "whole_tree_with_env",
+                    basePath: "orange",
+                    environmentInfo: {
+                      domainName: "fruits",
+                      hostName: "basket",
+                      aliasTarget: "something",
+                      zoneId: "myzone"
+                    },
+                    resourceTree: null
                 })
             ]
         }).build(this);
