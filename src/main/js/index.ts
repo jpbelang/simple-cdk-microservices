@@ -1,5 +1,5 @@
 
-export {MicroserviceBuilder, Microservice, Handler, HandlerOptions, Configurator, DefaultConfigurator, ServiceListener} from './microservice'
+export {MicroserviceBuilder, Microservice, Handler, HandlerOptions, Configurator, DefaultConfigurator, ServiceListener, NonMandatoryTaggingType, TaggingType} from './microservice'
 export {DynamoDBHandler} from "./dynamo_db"
 export {SimpleLambdaSubscribed} from "./subscribed_lambda"
 export {WebLambda, simpleMethod} from "./web_lambda"
