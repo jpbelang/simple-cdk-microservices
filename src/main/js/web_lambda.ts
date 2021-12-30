@@ -95,8 +95,7 @@ export class WebLambda implements Handler {
             })
 
             if ( this.data.environmentInfo ) {
-                let actualDomainName = this.data.environmentInfo;
-
+                const actualDomainName = this.data.environmentInfo;
 
                 const domainName = DomainName.fromDomainNameAttributes(config.parentConstruct, "imported-domain", {
                     domainName: actualDomainName.hostName + "." + actualDomainName.domainName,
