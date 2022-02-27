@@ -3,7 +3,7 @@ on:
   push:
     branches: [ master ]
     tags:
-      - !"v*"
+      - '!v*'
 jobs:
   Run-Compilation-And-Tests:
     runs-on: ubuntu-latest
