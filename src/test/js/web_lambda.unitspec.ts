@@ -1,7 +1,7 @@
 import {AssetCode, Runtime} from "aws-cdk-lib/aws-lambda";
 import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Topic} from "aws-cdk-lib/aws-sns";
-import {Stack} from "aws-cdk-lib/core";
+import {Stack} from "aws-cdk-lib";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Template} from "aws-cdk-lib/assertions";

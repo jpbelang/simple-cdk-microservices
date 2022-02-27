@@ -5,7 +5,7 @@ import {
     Table,
     TableProps
 } from "aws-cdk-lib/aws-dynamodb"
-import {RemovalPolicy, Tags} from "aws-cdk-lib/core";
+import {RemovalPolicy, Tags} from "aws-cdk-lib";
 import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";

@@ -1,6 +1,6 @@
 import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Topic} from "aws-cdk-lib/aws-sns";
-import {Stack} from "aws-cdk-lib/core";
+import {Stack} from "aws-cdk-lib";
 import {Table} from "aws-cdk-lib/aws-dynamodb";
 import {DynamoConfigurator, DynamoDBHandler} from "../../main/js/dynamo_db";
 

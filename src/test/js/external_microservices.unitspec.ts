@@ -1,5 +1,5 @@
 
-import {Stack} from "aws-cdk-lib/core";
+import {Stack} from "aws-cdk-lib";
 import {ExternalMicroservice} from "../../main/js/external_microservice";
 
 describe('external services', () => {

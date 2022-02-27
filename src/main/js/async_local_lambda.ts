@@ -5,7 +5,7 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {IGrantable} from "aws-cdk-lib/aws-iam";
-import {Tags} from "aws-cdk-lib/core";
+import {Tags} from "aws-cdk-lib";
 
 export type AsyncLambdaHandlerData = {
     fifo?: boolean

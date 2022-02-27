@@ -3,7 +3,7 @@ import {Function, FunctionProps} from "aws-cdk-lib/aws-lambda";
 import {ITopic} from 'aws-cdk-lib/aws-sns'
 import {HandlerOptions, NonMandatoryTaggingType} from "./microservice";
 import {Optional} from "typescript-optional";
-import {Tags} from "aws-cdk-lib/core";
+import {Tags} from "aws-cdk-lib";
 
 export type LambdaSupportProps = {
     functionConfigurator?: <T extends LambdaSupportProps>(func: lambda.Function, data: T, config: HandlerOptions) => void

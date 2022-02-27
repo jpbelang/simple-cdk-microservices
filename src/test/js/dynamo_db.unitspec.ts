@@ -1,7 +1,7 @@
 import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Topic} from "aws-cdk-lib/aws-sns";
 
-import {Stack} from "aws-cdk-lib/core";
+import {Stack} from "aws-cdk-lib";
 import {DynamoDBHandler} from "../../main/js";
 import {AttributeType} from "aws-cdk-lib/aws-dynamodb";
 import {Match, Template} from "aws-cdk-lib/assertions";

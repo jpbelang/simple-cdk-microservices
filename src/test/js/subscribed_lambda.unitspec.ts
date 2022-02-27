@@ -3,8 +3,7 @@ import {AssetCode, Runtime} from "aws-cdk-lib/aws-lambda";
 import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Topic} from "aws-cdk-lib/aws-sns";
-
-import {Stack} from "aws-cdk-lib/core";
+import {Stack} from "aws-cdk-lib";
 
 
 describe("subscribed lambda testing", () => {
