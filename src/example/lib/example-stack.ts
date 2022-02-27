@@ -1,7 +1,7 @@
-import {AttributeType, StreamViewType} from "@aws-cdk/aws-dynamodb";
-import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
-import {RestApi} from "@aws-cdk/aws-apigateway";
-import {Construct, Duration, Stack, StackProps} from "@aws-cdk/core";
+import {AttributeType, StreamViewType} from "aws-cdk-lib/aws-dynamodb";
+import {AssetCode, Runtime} from "aws-cdk-lib/aws-lambda";
+import {RestApi} from "aws-cdk-lib/aws-apigateway";
+import {Duration, Stack, StackProps} from "aws-cdk-lib/core";
 import {MicroserviceBuilder} from "../../main/js";
 import {DynamoDBHandler} from "../../main/js";
 import {SimpleLambdaSubscribed} from "../../main/js";
@@ -9,7 +9,8 @@ import {simpleMethod, WebLambda} from "../../main/js";
 import {DynamoStreamLambda} from "../../main/js";
 import {AsyncLambda} from "../../main/js/async_local_lambda";
 import {TimerLambda} from "../../main/js/timer_lambda";
-import {Rule, Schedule, RuleTargetInput} from "@aws-cdk/aws-events"
+import {Rule, Schedule, RuleTargetInput} from "aws-cdk-lib/aws-events"
+import {Construct} from "constructs";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {

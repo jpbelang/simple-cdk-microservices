@@ -1,11 +1,10 @@
-import {AssetCode, Runtime} from "@aws-cdk/aws-lambda";
-import {Queue} from "@aws-cdk/aws-sqs";
-import {Topic} from "@aws-cdk/aws-sns";
-import '@aws-cdk/assert/jest';
-
-import {Stack} from "@aws-cdk/core";
-import {simpleMethod, WebLambda} from "../../main/js/web_lambda";
-import {RestApi} from "@aws-cdk/aws-apigateway";
+import {AssetCode, Runtime} from "aws-cdk-lib/aws-lambda";
+import {Queue} from "aws-cdk-lib/aws-sqs";
+import {Topic} from "aws-cdk-lib/aws-sns";
+import {Stack} from "aws-cdk-lib/core";
+import {simpleMethod, WebLambda} from "../../main/js";
+import {RestApi} from "aws-cdk-lib/aws-apigateway";
+import {Template} from "aws-cdk-lib/assertions";
 
 
 describe("web lambda testing", () => {
@@ -38,13 +37,42 @@ describe("web lambda testing", () => {
                 })
             })
 
-            expect(theStack).toHaveResource("AWS::Lambda::Function", {
-                "Handler": "my_lambda",
-                "Runtime": "nodejs12.x"
+            const template = Template.fromStack(theStack);
+
+            template.hasResource("AWS::Lambda::Function",   {
+                "Type": "AWS::Lambda::Function",
+                "Properties": {
+                    "Code": {
+                        "ZipFile": "doodah"
+                    },
+                    "Role": {
+                        "Fn::GetAtt": [
+                            "mylambdaServiceRole8D7BC871",
+                            "Arn"
+                        ]
+                    },
+                    "Environment": {
+                        "Variables": {
+                            "output": {
+                                "Ref": "topic69831491"
+                            },
+                            "env": "Dev"
+                        }
+                    },
+                    "Handler": "my_lambda",
+                    "Runtime": "nodejs12.x"
+                },
+                "DependsOn": [
+                    "mylambdaServiceRoleDefaultPolicy4394AD8A",
+                    "mylambdaServiceRole8D7BC871"
+                ]
             });
 
-            expect(theStack).toHaveResource("AWS::ApiGateway::RestApi", {
-                "Name": "myapi",
+            template.hasResource("AWS::ApiGateway::RestApi",   {
+                "Type": "AWS::ApiGateway::RestApi",
+                "Properties": {
+                    "Name": "myapi"
+                }
             });
         })
     }

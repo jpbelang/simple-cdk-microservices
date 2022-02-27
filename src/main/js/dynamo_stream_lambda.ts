@@ -1,8 +1,6 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
-import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
-import {Optional} from "typescript-optional";
-import * as lambda from "@aws-cdk/aws-lambda";
+import {Function} from "aws-cdk-lib/aws-lambda";
+import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 
 export type DynamoStreamHandlerData = {
@@ -51,4 +49,4 @@ export class LambdaConfigurator extends DefaultConfigurator {
 
         z.receiveInternalEvents((s) => s instanceof DynamoEventSource? this.func.addEventSource(s):{})
     }
-};
+}

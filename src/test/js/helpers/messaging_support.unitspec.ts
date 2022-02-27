@@ -1,5 +1,4 @@
 import {SNSEvent, SNSMessageAttributes, SQSEvent, SQSMessageAttributes} from "aws-lambda";
-import {SQSMessageAttribute} from "aws-lambda/trigger/sqs";
 import {SNSEventMetadata, SQSEventMetadata} from "../../../main/js/helpers/messaging_support";
 
 type AttributeMap = { [id: string]: string; }

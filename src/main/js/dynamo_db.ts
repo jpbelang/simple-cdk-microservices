@@ -4,13 +4,12 @@ import {
     GlobalSecondaryIndexProps,
     Table,
     TableProps
-} from "@aws-cdk/aws-dynamodb"
-import {RemovalPolicy, Tags} from "@aws-cdk/core";
-import {IGrantable} from "@aws-cdk/aws-iam"
+} from "aws-cdk-lib/aws-dynamodb"
+import {RemovalPolicy, Tags} from "aws-cdk-lib/core";
+import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
-import {IEventSource, StartingPosition} from "@aws-cdk/aws-lambda";
-import {DynamoEventSource} from "@aws-cdk/aws-lambda-event-sources";
-import * as lambda from "@aws-cdk/aws-lambda";
+import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
+import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 
 export type DynamoDBHandlerData = {
     tableName: string

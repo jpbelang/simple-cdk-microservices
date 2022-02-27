@@ -1,13 +1,11 @@
-import {Queue} from "@aws-cdk/aws-sqs";
+import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Optional} from "typescript-optional";
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import * as lambda from "@aws-cdk/aws-lambda";
+import * as lambda from "aws-cdk-lib/aws-lambda";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
-import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns";
-import {LambdaSubscription, SqsSubscription} from "@aws-cdk/aws-sns-subscriptions";
-import {SqsEventSource} from "@aws-cdk/aws-lambda-event-sources";
-import {IGrantable} from "@aws-cdk/aws-iam";
-import {Tags} from "@aws-cdk/core";
+import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
+import {IGrantable} from "aws-cdk-lib/aws-iam";
+import {Tags} from "aws-cdk-lib/core";
 
 export type AsyncLambdaHandlerData = {
     fifo?: boolean

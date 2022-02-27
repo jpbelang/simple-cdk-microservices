@@ -1,6 +1,6 @@
 
-import {ITopic, Topic} from "@aws-cdk/aws-sns"
-import {Construct} from "@aws-cdk/core";
+import {ITopic, Topic} from "aws-cdk-lib/aws-sns"
+import {Construct} from "constructs";
 import {ServiceListener} from "./microservice";
 
 export class ExternalMicroservice implements ServiceListener {

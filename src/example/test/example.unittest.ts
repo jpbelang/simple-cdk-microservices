@@ -1,13 +1,12 @@
-import {expect as expectCDK, MatchStyle, matchTemplate} from '@aws-cdk/assert';
-import * as cdk from '@aws-cdk/core';
+import * as cdk from 'aws-cdk-lib/core';
 import * as Example from '../lib/example-stack';
+import {Template} from "aws-cdk-lib/assertions";
 
 test('Empty Stack', () => {
     const app = new cdk.App();
     // WHEN
     const stack = new Example.ExampleStack(app, 'MyTestStack');
     // THEN
-    expectCDK(stack).to(matchTemplate({
-      "Resources": {}
-    }, MatchStyle.EXACT))
+    const template = Template.fromStack(stack);
+
 });

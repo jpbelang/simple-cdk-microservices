@@ -1,9 +1,10 @@
-import {IEventSource} from "@aws-cdk/aws-lambda";
-import {Queue} from "@aws-cdk/aws-sqs";
-import {Topic, ITopic} from "@aws-cdk/aws-sns";
-import {Construct, Tags} from "@aws-cdk/core";
-import {IGrantable} from "@aws-cdk/aws-iam"
+import {IEventSource} from "aws-cdk-lib/aws-lambda";
+import {Queue} from "aws-cdk-lib/aws-sqs";
+import {Topic, ITopic} from "aws-cdk-lib/aws-sns";
+import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
+import {Construct} from "constructs";
+import {Tags} from "aws-cdk-lib";
 
 export interface Configurator {
     id: string

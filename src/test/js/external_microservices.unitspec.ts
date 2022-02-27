@@ -1,10 +1,5 @@
-import {Queue} from "@aws-cdk/aws-sqs";
-import {Topic} from "@aws-cdk/aws-sns";
-import '@aws-cdk/assert/jest';
 
-import {Stack} from "@aws-cdk/core";
-import {DynamoDBHandler} from "../../main/js/dynamo_db";
-import {AttributeType} from "@aws-cdk/aws-dynamodb";
+import {Stack} from "aws-cdk-lib/core";
 import {ExternalMicroservice} from "../../main/js/external_microservice";
 
 describe('external services', () => {

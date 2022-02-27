@@ -1,16 +1,15 @@
-import {Queue} from "@aws-cdk/aws-sqs";
-import {Topic} from "@aws-cdk/aws-sns";
-import '@aws-cdk/assert/jest';
-import {Stack} from "@aws-cdk/core";
-import {Table} from "@aws-cdk/aws-dynamodb";
+import {Queue} from "aws-cdk-lib/aws-sqs";
+import {Topic} from "aws-cdk-lib/aws-sns";
+import {Stack} from "aws-cdk-lib/core";
+import {Table} from "aws-cdk-lib/aws-dynamodb";
 import {DynamoConfigurator, DynamoDBHandler} from "../../main/js/dynamo_db";
 
-const {Runtime, AssetCode} = jest.requireActual("@aws-cdk/aws-lambda");
-const {AttributeType} = jest.requireActual("@aws-cdk/aws-dynamodb");
+const {Runtime, AssetCode} = jest.requireActual("aws-cdk-lib/aws-lambda");
+const {AttributeType} = jest.requireActual("aws-cdk-lib/aws-dynamodb");
 
 
 const grantReadWriteDataMock = jest.fn().mockImplementation()
-jest.mock('@aws-cdk/aws-dynamodb', () => {
+jest.mock('aws-cdk-lib/aws-dynamodb', () => {
     const tableMock = jest.fn().mockImplementation(() => {
         return {
             grantReadWriteData: grantReadWriteDataMock

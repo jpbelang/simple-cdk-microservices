@@ -1,17 +1,8 @@
 
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import {Function, FunctionProps} from "@aws-cdk/aws-lambda";
-import {
-    BasePathMapping,
-    CorsOptions,
-    DomainName,
-    IResource,
-    LambdaIntegration,
-    LambdaRestApi
-} from "@aws-cdk/aws-apigateway";
-import * as lambda from "@aws-cdk/aws-lambda";
-import {Optional} from "typescript-optional";
 import {BaseEnvironmentInfo, configureFunction, EnvironmentInfo, LambdaSupportProps} from "./lambda_support";
+import {Function} from "aws-cdk-lib/aws-lambda"
+import {BasePathMapping, CorsOptions, DomainName, LambdaIntegration, LambdaRestApi, IResource} from "aws-cdk-lib/aws-apigateway";
 
 export type EnumeratedApiProps = {
     resourceTree: ResourceTree

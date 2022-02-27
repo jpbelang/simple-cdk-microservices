@@ -1,13 +1,12 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import * as lambda from "@aws-cdk/aws-lambda";
-import {ITopic, SubscriptionFilter} from "@aws-cdk/aws-sns"
-import {Queue} from "@aws-cdk/aws-sqs"
+import * as lambda from "aws-cdk-lib/aws-lambda";
+import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns"
+import {Queue} from "aws-cdk-lib/aws-sqs"
 
-import {LambdaSubscription, SqsSubscription} from "@aws-cdk/aws-sns-subscriptions";
+import {LambdaSubscription, SqsSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
 import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
-import {Construct} from "@aws-cdk/core";
-import {SqsEventSource} from "@aws-cdk/aws-lambda-event-sources";
+import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
@@ -77,7 +76,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
             const queueSubscription = new SqsSubscription(queue, {
                 filterPolicy: {
                     "event-name": SubscriptionFilter.stringFilter({
-                        whitelist: this.data.topicEvents
+                        allowlist: this.data.topicEvents
                     }),
                 },
                 deadLetterQueue: this.config.deadLetterFifoQueue(),
@@ -90,7 +89,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
             const subscription = new LambdaSubscription(this.func, {
                 filterPolicy: {
                     "event-name": SubscriptionFilter.stringFilter({
-                        whitelist: this.data.topicEvents
+                        allowlist: this.data.topicEvents
                     })
                 },
                 deadLetterQueue: this.config.deadLetterQueue()
