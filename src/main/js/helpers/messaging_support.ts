@@ -63,7 +63,7 @@ export class SNSEventMetadata implements EventMetadata {
     }
 
     static fromEvent(event: SNSEvent, defaultDate?: Date) {
-        return new SNSEventMetadata(event)
+        return new SNSEventMetadata(event, defaultDate)
     }
 }
 
