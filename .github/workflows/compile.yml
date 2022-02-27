@@ -1,5 +1,7 @@
 name: Compile
-on: [push]
+on:
+  push:
+    branches: [ master ]
 jobs:
   Run-Compilation-And-Tests:
     runs-on: ubuntu-latest
