@@ -180,6 +180,7 @@ export class MicroserviceBuilder {
         };
 
         const configurators = this.data.handlers.map(h => {
+            const containingConstruct = new Construct(construct, "something")
             return h.handle({
                 env: this.data.env,
                 parentConstruct: construct,
