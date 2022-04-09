@@ -183,7 +183,7 @@ export class MicroserviceBuilder {
             const containingConstruct = new Construct(construct, "something")
             return h.handle({
                 env: this.data.env,
-                parentConstruct: construct,
+                parentConstruct: containingConstruct,
                 parentName: this.data.name,
                 topic: serviceTopic,
                 deadLetterQueue: deadLetterQueueFunction,
