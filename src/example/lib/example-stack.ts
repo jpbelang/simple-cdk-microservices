@@ -25,8 +25,8 @@ export class ExampleStack extends Stack {
                 project: "IT"
             },
             orderedEvents: false,
-            handlers: [
-                AsyncLambda.create({
+            handlers: {
+                something: AsyncLambda.create({
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromAsset("../../dist/example/apps"),
                     handler: "async_app.worker",
@@ -34,18 +34,18 @@ export class ExampleStack extends Stack {
                         project: "NotIT"
                     }
                 }),
-                DynamoDBHandler.create({
+                database: DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
                     tableName: "myTable",
                 }),
-                SimpleLambdaSubscribed.create({
+                simpleSubscribed: SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromAsset("../../dist/example/apps"),
                     handler: "my_lambda.worker"
                 }),
-                WebLambda.create({
+                webApi: WebLambda.create({
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "anotherLambda",
@@ -57,27 +57,27 @@ export class ExampleStack extends Stack {
                     topResource: me.root
 
                 }),
-                WebLambda.create({
+                secondApi: WebLambda.create({
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "whole_tree",
                     basePath: "banana",
                     resourceTree: null
                 }),
-                WebLambda.create({
+                thirdApi: WebLambda.create({
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "whole_tree_with_env",
                     basePath: "orange",
                     environmentInfo: {
-                      domainName: "fruits",
-                      hostName: "basket",
-                      aliasTarget: "something",
-                      zoneId: "myzone"
+                        domainName: "fruits",
+                        hostName: "basket",
+                        aliasTarget: "something",
+                        zoneId: "myzone"
                     },
                     resourceTree: null
                 })
-            ]
+            }
         }).build(this);
 
 
@@ -88,19 +88,19 @@ export class ExampleStack extends Stack {
                 project: "IT"
             },
             orderedEvents: true,
-            handlers: [
-                DynamoDBHandler.create({
+            handlers: {
+                db: DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
                     tableName: "otherTable",
                     stream: StreamViewType.NEW_AND_OLD_IMAGES
                 }),
-                DynamoStreamLambda.create({
+                back: DynamoStreamLambda.create({
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "streamLambda"
                 }),
-                TimerLambda.create({
+                timer: TimerLambda.create({
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "timerLambda",
@@ -110,7 +110,7 @@ export class ExampleStack extends Stack {
                         minute: "0"
                     })
                 })
-            ]
+            }
         }).build(this);
 
         service1.listensForEventsFrom([service2])

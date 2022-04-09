@@ -91,7 +91,7 @@ type MicroserviceData = {
     deadLetterFifoQueue: () => Queue
     topic: Topic
     parentConstruct: Construct
-    handlers: Handler[]
+    handlers: {[ key: string ]: Handler }
     configurators: Configurator[]
 }
 
@@ -126,7 +126,7 @@ type MicroserviceBuilderData = {
     env: string,
     tags: TaggingType,
     orderedEvents?: boolean,
-    handlers: Handler[]
+    handlers: { [key: string]: Handler }
 }
 
 export class MicroserviceBuilder {
@@ -179,9 +179,9 @@ export class MicroserviceBuilder {
             return dlfq
         };
 
-        const configurators = this.data.handlers.map(h => {
+        const configurators = Object.entries(this.data.handlers).map(h => {
             const containingConstruct = new Construct(construct, "something")
-            return h.handle({
+            return h[1].handle({
                 env: this.data.env,
                 parentConstruct: containingConstruct,
                 parentName: this.data.name,
