@@ -88,19 +88,19 @@ export class ExampleStack extends Stack {
                 project: "IT"
             },
             orderedEvents: true,
-            handlers: {
-                db: DynamoDBHandler.create({
+            handlers: [
+                DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
                     tableName: "otherTable",
                     stream: StreamViewType.NEW_AND_OLD_IMAGES
                 }),
-                back: DynamoStreamLambda.create({
+                DynamoStreamLambda.create({
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "streamLambda"
                 }),
-                timer: TimerLambda.create({
+                TimerLambda.create({
                     runtime: Runtime.NODEJS_12_X,
                     code: AssetCode.fromInline("doodah"),
                     handler: "timerLambda",
@@ -110,7 +110,7 @@ export class ExampleStack extends Stack {
                         minute: "0"
                     })
                 })
-            }
+            ]
         }).build(this);
 
         service1.listensForEventsFrom([service2])

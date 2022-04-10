@@ -6,6 +6,9 @@ import {Optional} from "typescript-optional";
 import {Construct} from "constructs";
 import {Tags} from "aws-cdk-lib";
 
+type HandlerObjectList = {[ key: string ]: Handler }
+type HandlerList = HandlerObjectList | Handler[]
+
 export interface Configurator {
     id: string
 
@@ -91,7 +94,7 @@ type MicroserviceData = {
     deadLetterFifoQueue: () => Queue
     topic: Topic
     parentConstruct: Construct
-    handlers: {[ key: string ]: Handler }
+    handlers: HandlerList
     configurators: Configurator[]
 }
 
@@ -126,7 +129,7 @@ type MicroserviceBuilderData = {
     env: string,
     tags: TaggingType,
     orderedEvents?: boolean,
-    handlers: { [key: string]: Handler }
+    handlers: HandlerList
 }
 
 export class MicroserviceBuilder {
@@ -134,6 +137,18 @@ export class MicroserviceBuilder {
 
     constructor(data: MicroserviceBuilderData) {
         this.data = data;
+    }
+
+    private asObject(handlers: HandlerList): HandlerObjectList {
+
+        if ( Array.isArray(handlers) ) {
+
+            const object: HandlerObjectList = {}
+            handlers.map(x => object[x.constructor.name] = x)
+            return object;
+        } else {
+            return handlers;
+        }
     }
 
     build(construct: Construct): Microservice {
@@ -179,8 +194,8 @@ export class MicroserviceBuilder {
             return dlfq
         };
 
-        const configurators = Object.entries(this.data.handlers).map(h => {
-            const containingConstruct = new Construct(construct, "something")
+        const configurators = Object.entries(this.asObject(this.data.handlers)).map(h => {
+            const containingConstruct = new Construct(construct, h[0])
             return h[1].handle({
                 env: this.data.env,
                 parentConstruct: containingConstruct,
