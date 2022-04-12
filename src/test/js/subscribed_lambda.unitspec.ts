@@ -22,7 +22,7 @@ describe("subscribed lambda testing", () => {
                 deadLetterQueue: () => queue,
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
-                parentName: "hola",
+                handlerName: "hola",
                 topic: new Topic(theStack, "topic", {
                     topicName: "topicName"
                 })

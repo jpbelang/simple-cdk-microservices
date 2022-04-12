@@ -12,7 +12,6 @@ import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 
 export type DynamoDBHandlerData = {
-    tableName: string
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
     tags?: NonMandatoryTaggingType
@@ -27,13 +26,11 @@ export class DynamoDBHandler implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let tableName = `${config.parentName}-${this.data.tableName}`;
         const adjustedProps = Object.assign( {}, this.data, {
-            tableName: tableName,
             removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
         });
-        const table = new Table(config.parentConstruct, tableName, adjustedProps)
+        const table = new Table(config.parentConstruct, config.handlerName, adjustedProps)
 
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {
             table.addGlobalSecondaryIndex(gsi)
@@ -43,7 +40,7 @@ export class DynamoDBHandler implements Handler {
         Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(table).add(k,v, {
             priority: 101
         }))
-        return new DynamoConfigurator(tableName, this.data.tableName, table)
+        return new DynamoConfigurator(config.handlerName, config.handlerName, table)
     }
 
     static create(data: DynamoDBHandlerData) {
@@ -54,18 +51,18 @@ export class DynamoDBHandler implements Handler {
 
 export class DynamoConfigurator extends DefaultConfigurator {
 
-    private readonly tablename: string;
+    private readonly handlerName: string;
     private readonly table: Table;
 
     constructor(id: string, tablename: string, table: Table) {
         super(id);
-        this.tablename = tablename;
+        this.handlerName = tablename;
         this.table = table
     }
 
     setEnvironment(setter: (key: string, value: string) => void) {
 
-        setter(`dynamo_${this.tablename}`, `${this.id}`)
+        setter(`dynamo_${this.handlerName}`, `${this.table.tableName}`)
     }
 
     grantSecurityTo(grantable: IGrantable) {

@@ -81,7 +81,7 @@ export class WebLambda implements Handler {
 
             const lra = new LambdaRestApi(config.parentConstruct, `${id}ApiGateway`, {
                 handler: func,
-                restApiName: `${config.parentName}-${this.data.basePath}`,
+                restApiName: `${config.handlerName}-${this.data.basePath}`,
                 defaultCorsPreflightOptions: this.data.defaultCorsPreflightOptions
             })
 

@@ -65,9 +65,9 @@ export class LambdaConfigurator extends DefaultConfigurator {
     listenToServiceTopic(topic: ITopic, isTopicFifo: boolean) {
 
         if (isTopicFifo) {
-            const queue = new Queue(topic as any, this.config.parentName, {
+            const queue = new Queue(topic as any, this.config.handlerName, {
                 fifo: true,
-                queueName: `sequencingQueueFor${this.config.parentName}.fifo`,
+                queueName: `sequencingQueueFor${this.config.handlerName}.fifo`,
                 deadLetterQueue: {
                     queue: this.config.deadLetterFifoQueue(),
                     maxReceiveCount: 2

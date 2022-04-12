@@ -37,7 +37,6 @@ export class ExampleStack extends Stack {
                 database: DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
-                    tableName: "myTable",
                 }),
                 simpleSubscribed: SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
@@ -63,7 +62,7 @@ export class ExampleStack extends Stack {
                     handler: "whole_tree",
                     basePath: "banana",
                     resourceTree: null
-                }),
+                })/*,
                 thirdApi: WebLambda.create({
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromInline("doodah"),
@@ -76,7 +75,7 @@ export class ExampleStack extends Stack {
                         zoneId: "myzone"
                     },
                     resourceTree: null
-                })
+                })*/
             }
         }).build(this);
 

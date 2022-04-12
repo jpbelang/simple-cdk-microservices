@@ -63,7 +63,7 @@ export type TaggingType = { project: string } & { [key: string]: string; }
 export type NonMandatoryTaggingType = { [key: string]: string; }
 
 export type HandlerOptions = {
-    parentName: string;
+    handlerName: string;
     env: string,
     deadLetterQueue(): Queue;
     deadLetterFifoQueue(): Queue,
@@ -194,12 +194,12 @@ export class MicroserviceBuilder {
             return dlfq
         };
 
-        const configurators = Object.entries(this.asObject(this.data.handlers)).map(h => {
-            const containingConstruct = new Construct(construct, h[0])
-            return h[1].handle({
+        const configurators = Object.entries(this.asObject(this.data.handlers)).map(([handlerName, handler]) => {
+            const containingConstruct = new Construct(construct, handlerName)
+            return handler.handle({
                 env: this.data.env,
                 parentConstruct: containingConstruct,
-                parentName: this.data.name,
+                handlerName: handlerName,
                 topic: serviceTopic,
                 deadLetterQueue: deadLetterQueueFunction,
                 deadLetterFifoQueue: deadLetterFifoQueueFunction
