@@ -1,4 +1,4 @@
-import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
+import {Configurator, DefaultConfigurator, Handler, HandlerOptions, Publisher} from "./microservice";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns"
 import {Queue} from "aws-cdk-lib/aws-sqs"
@@ -62,40 +62,12 @@ export class LambdaConfigurator extends DefaultConfigurator {
         z.grantSecurityTo(this.func)
     }
 
-    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean) {
+    listenToServiceTopic(pubSub: Publisher, isTopicFifo: boolean) {
 
-        if (isTopicFifo) {
-            const queue = new Queue(topic as any, this.config.handlerName, {
-                fifo: true,
-                queueName: `sequencingQueueFor${this.config.handlerName}.fifo`,
-                deadLetterQueue: {
-                    queue: this.config.deadLetterFifoQueue(),
-                    maxReceiveCount: 2
-                }
-            })
-            const queueSubscription = new SqsSubscription(queue, {
-                filterPolicy: {
-                    "event-name": SubscriptionFilter.stringFilter({
-                        allowlist: this.data.topicEvents
-                    }),
-                },
-                deadLetterQueue: this.config.deadLetterFifoQueue(),
-
-            })
-            topic.addSubscription(queueSubscription)
-            this.func.addEventSource(new SqsEventSource(queue))
-            queue.grantConsumeMessages(this.func)
-        } else {
-            const subscription = new LambdaSubscription(this.func, {
-                filterPolicy: {
-                    "event-name": SubscriptionFilter.stringFilter({
-                        allowlist: this.data.topicEvents
-                    })
-                },
-                deadLetterQueue: this.config.deadLetterQueue()
-            })
-            topic.addSubscription(subscription)
-
-        }
+        pubSub.subscribeLambda({
+            events: this.data.topicEvents,
+            lambda: this.func,
+            deadLetterQueue: this.config.deadLetterQueue()
+        })
     }
-};
+}

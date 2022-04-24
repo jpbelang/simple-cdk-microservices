@@ -5,6 +5,7 @@ import {Stack} from "aws-cdk-lib";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Template} from "aws-cdk-lib/assertions";
+import {snsReceiver} from "../../main/js/microservice";
 
 
 describe("web lambda testing", () => {
@@ -12,7 +13,9 @@ describe("web lambda testing", () => {
         it("create lambda", () => {
 
             let theStack = new Stack();
-
+            const f = snsReceiver()({
+                name: "boo"
+            } as any, theStack)
             const lh = WebLambda.create({
                 runtime: Runtime.NODEJS_12_X,
                 resourceTree: {
@@ -32,9 +35,7 @@ describe("web lambda testing", () => {
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                topic: new Topic(theStack, "topic", {
-                    topicName: "topicName"
-                })
+                publisher: f,
             })
 
             const template = Template.fromStack(theStack);
@@ -54,7 +55,7 @@ describe("web lambda testing", () => {
                     "Environment": {
                         "Variables": {
                             "output": {
-                                "Ref": "topic69831491"
+                                "Ref": "booTopic0DE911F7"
                             },
                             "env": "Dev"
                         }

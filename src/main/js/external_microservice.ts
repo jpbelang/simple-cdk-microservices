@@ -1,16 +1,17 @@
 
 import {ITopic, Topic} from "aws-cdk-lib/aws-sns"
 import {Construct} from "constructs";
-import {ServiceListener} from "./microservice";
+import {Publisher, ServiceListener, SNSPublisher} from "./microservice";
+import {SnsPublish} from "aws-cdk-lib/aws-stepfunctions-tasks";
 
 export class ExternalMicroservice implements ServiceListener {
-    private readonly externalTopic: ITopic;
+    private readonly externalTopic: Publisher;
 
-    constructor(externalTopic: ITopic, private readonly isFifo: boolean) {
+    constructor(externalTopic: Publisher, private readonly isFifo: boolean) {
         this.externalTopic = externalTopic;
     }
 
-    topic(): ITopic {
+    topic(): Publisher {
 
         return this.externalTopic
     }
@@ -24,7 +25,7 @@ export class ExternalMicroservice implements ServiceListener {
     }
 
 
-    static create(externalTopic: ITopic) {
+    static create(externalTopic: Publisher) {
         return new ExternalMicroservice(externalTopic, false)
     }
 
@@ -32,6 +33,6 @@ export class ExternalMicroservice implements ServiceListener {
 
         const id = arn.split(":")
         const last = id[id.length - 1].replace(/.fifo$/, "")
-        return new ExternalMicroservice(Topic.fromTopicArn(parent, last, arn),arn.endsWith(".fifo"))
+        return new ExternalMicroservice(new SNSPublisher(Topic.fromTopicArn(parent, last, arn)),arn.endsWith(".fifo"))
     }
 }

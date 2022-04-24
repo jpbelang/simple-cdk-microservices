@@ -1,8 +1,8 @@
 import {Queue} from "aws-cdk-lib/aws-sqs";
-import {Topic} from "aws-cdk-lib/aws-sns";
 import {Stack} from "aws-cdk-lib";
 import {Table} from "aws-cdk-lib/aws-dynamodb";
 import {DynamoConfigurator, DynamoDBHandler} from "../../main/js/dynamo_db";
+import {snsReceiver} from "../../main/js/microservice";
 
 const {Runtime, AssetCode} = jest.requireActual("aws-cdk-lib/aws-lambda");
 const {AttributeType} = jest.requireActual("aws-cdk-lib/aws-dynamodb");
@@ -41,25 +41,28 @@ describe("mock dynamo db testing", () => {
             })
 
             let theStack = new Stack();
+            const f = snsReceiver()({
+                name: "boo"
+            } as any, theStack)
+
             const configurator: DynamoConfigurator= lh.handle({
                 env: "Dev",
                 deadLetterQueue: () => new Queue(theStack, "dead"),
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                topic: new Topic(theStack, "topic", {
-                    topicName: "topicName"
-                })
+                publisher: f
             }) as any
 
             expect(configurator.id).toEqual("hola")
 
             let key;
             let value;
-            expect(configurator.setEnvironment((k,v) => {
+            configurator.setEnvironment((k,v) => {
                 key = k
                 value = v
-            }))
+            })
+
             expect(key).toBe("dynamo_hola")
             expect(value).toBe("undefined"); // not brilliant, but it's what the mocks do.
         })

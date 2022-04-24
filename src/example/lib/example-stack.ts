@@ -11,6 +11,7 @@ import {AsyncLambda} from "../../main/js/async_local_lambda";
 import {TimerLambda} from "../../main/js/timer_lambda";
 import {Rule, Schedule, RuleTargetInput} from "aws-cdk-lib/aws-events"
 import {Construct} from "constructs";
+import {snsReceiver} from "../../main/js/microservice";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -24,7 +25,7 @@ export class ExampleStack extends Stack {
             tags: {
                 project: "IT"
             },
-            orderedEvents: false,
+            messageReceiver: snsReceiver(),
             handlers: {
                 something: AsyncLambda.create({
                     runtime: Runtime.NODEJS_14_X,
@@ -86,7 +87,7 @@ export class ExampleStack extends Stack {
             tags: {
                 project: "IT"
             },
-            orderedEvents: true,
+            messageReceiver: snsReceiver(),
             handlers: [
                 DynamoDBHandler.create({
                     partitionKey: {name: "pk", type: AttributeType.STRING},

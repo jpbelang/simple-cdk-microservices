@@ -1,12 +1,13 @@
-import {IEventSource} from "aws-cdk-lib/aws-lambda";
+import {IEventSource, Function} from "aws-cdk-lib/aws-lambda";
 import {Queue} from "aws-cdk-lib/aws-sqs";
-import {Topic, ITopic} from "aws-cdk-lib/aws-sns";
+import {Topic, ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns";
 import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
 import {Construct} from "constructs";
 import {Tags} from "aws-cdk-lib";
+import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
 
-type HandlerObjectList = {[ key: string ]: Handler }
+type HandlerObjectList = { [key: string]: Handler }
 type HandlerList = HandlerObjectList | Handler[]
 
 export interface Configurator {
@@ -24,7 +25,7 @@ export interface Configurator {
 
     receiveInternalEvents(setter: (source: IEventSource) => void): void
 
-    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean): void;
+    listenToServiceTopic(topic: Publisher, isTopicFifo: boolean): void;
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -53,7 +54,7 @@ export class DefaultConfigurator implements Configurator {
     wantSecurity(z: Configurator): void {
     }
 
-    listenToServiceTopic(topic: ITopic, isTopicFifo: boolean): void {
+    listenToServiceTopic(topic: Publisher, isTopicFifo: boolean): void {
     }
 
 
@@ -61,13 +62,25 @@ export class DefaultConfigurator implements Configurator {
 
 export type TaggingType = { project: string } & { [key: string]: string; }
 export type NonMandatoryTaggingType = { [key: string]: string; }
+export type SubscriptionData = {
+    lambda:Function,
+    deadLetterQueue: Queue,
+    events: string[]
+}
+type ReceiverFactory = (data: MicroserviceBuilderData, parent: Construct) => Publisher;
+export interface Publisher {
+    allowPublish(grantable: IGrantable): void
+    subscribeLambda(data: SubscriptionData): void
+    isFifo(): boolean
+    identifier(): string
+}
 
 export type HandlerOptions = {
-    handlerName: string;
+    handlerName: string,
+    publisher: Publisher,
     env: string,
     deadLetterQueue(): Queue;
     deadLetterFifoQueue(): Queue,
-    topic: Topic;
     parentConstruct: Construct
 }
 
@@ -77,13 +90,53 @@ export interface Handler {
 }
 
 export interface ServiceListener {
-    topic(): ITopic
+    topic(): Publisher
 
     isTopicFifo(): boolean
 
     listensForEventsFrom(services: ServiceListener[]): void
 }
 
+export class SNSPublisher implements Publisher {
+
+    constructor(private topic: ITopic) {
+
+    }
+
+    allowPublish(grantable: IGrantable): void {
+        this.topic.grantPublish(grantable)
+    }
+    identifier(): string {
+        return this.topic.topicArn;
+    }
+    isFifo(): boolean {
+        return false;
+    }
+    subscribeLambda(data: SubscriptionData) {
+
+        const subscription = new LambdaSubscription(data.lambda, {
+            filterPolicy: {
+                "event-name": SubscriptionFilter.stringFilter({
+                    allowlist: data.events
+                })
+            },
+            deadLetterQueue: data.deadLetterQueue
+        })
+        this.topic.addSubscription(subscription)
+    }
+
+}
+
+export function snsReceiver(): ReceiverFactory {
+    return (data: MicroserviceBuilderData, construct: Construct) => {
+
+        const topic = new Topic(construct, data.name + "Topic", {
+            topicName: data.name + "Topic"
+        })
+
+        return new SNSPublisher(topic);
+    }
+}
 
 type MicroserviceData = {
     env: string,
@@ -92,7 +145,7 @@ type MicroserviceData = {
     parentName: string
     deadLetterQueue: () => Queue
     deadLetterFifoQueue: () => Queue
-    topic: Topic
+    topic: Publisher
     parentConstruct: Construct
     handlers: HandlerList
     configurators: Configurator[]
@@ -105,7 +158,7 @@ export class Microservice implements ServiceListener {
         this.data = data
     }
 
-    topic(): ITopic {
+    topic(): Publisher {
         return this.data.topic;
     }
 
@@ -128,12 +181,12 @@ type MicroserviceBuilderData = {
     name: string,
     env: string,
     tags: TaggingType,
-    orderedEvents?: boolean,
+    messageReceiver: ReceiverFactory,
     handlers: HandlerList
 }
 
 export class MicroserviceBuilder {
-    private data: MicroserviceBuilderData;
+    private readonly data: MicroserviceBuilderData;
 
     constructor(data: MicroserviceBuilderData) {
         this.data = data;
@@ -141,7 +194,7 @@ export class MicroserviceBuilder {
 
     private asObject(handlers: HandlerList): HandlerObjectList {
 
-        if ( Array.isArray(handlers) ) {
+        if (Array.isArray(handlers)) {
 
             const object: HandlerObjectList = {}
             handlers.map(x => object[x.constructor.name] = x)
@@ -153,23 +206,7 @@ export class MicroserviceBuilder {
 
     build(construct: Construct): Microservice {
 
-        const orderedEvents = Optional.ofNullable(this.data.orderedEvents).orElse(false)
-        let serviceTopic: Topic;
-
-        if (orderedEvents) {
-
-            serviceTopic = new Topic(construct, this.data.name + "Topic", {
-                topicName: this.data.name + "Topic.fifo",
-                fifo: true
-            })
-
-        } else {
-
-            serviceTopic = new Topic(construct, this.data.name + "Topic", {
-                topicName: this.data.name + "Topic"
-            })
-
-        }
+        const receiverConstruct = this.data.messageReceiver(this.data, construct);
 
         let dlq: Queue
         let dlfq: Queue
@@ -198,9 +235,9 @@ export class MicroserviceBuilder {
             const containingConstruct = new Construct(construct, handlerName)
             return handler.handle({
                 env: this.data.env,
+                publisher: receiverConstruct,
                 parentConstruct: containingConstruct,
                 handlerName: handlerName,
-                topic: serviceTopic,
                 deadLetterQueue: deadLetterQueueFunction,
                 deadLetterFifoQueue: deadLetterFifoQueueFunction
             });
@@ -216,10 +253,10 @@ export class MicroserviceBuilder {
 
         return new Microservice({
             env: this.data.env,
-            orderedEvents: orderedEvents,
+            orderedEvents: receiverConstruct.isFifo(),
             parentConstruct: construct,
             parentName: this.data.name,
-            topic: serviceTopic,
+            topic: receiverConstruct,
             deadLetterQueue: deadLetterQueueFunction,
             deadLetterFifoQueue: deadLetterQueueFunction,
             handlers: this.data.handlers,
