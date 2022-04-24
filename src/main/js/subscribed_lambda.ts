@@ -1,4 +1,4 @@
-import {Configurator, DefaultConfigurator, Handler, HandlerOptions, Publisher} from "./microservice";
+import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
 import * as lambda from "aws-cdk-lib/aws-lambda";
 import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns"
 import {Queue} from "aws-cdk-lib/aws-sqs"
@@ -7,6 +7,7 @@ import {LambdaSubscription, SqsSubscription} from "aws-cdk-lib/aws-sns-subscript
 import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
+import {Publisher} from "./publishers";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]

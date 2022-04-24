@@ -1,8 +1,8 @@
 
-import {ITopic, Topic} from "aws-cdk-lib/aws-sns"
+import {Topic} from "aws-cdk-lib/aws-sns"
 import {Construct} from "constructs";
-import {Publisher, ServiceListener, SNSPublisher} from "./microservice";
-import {SnsPublish} from "aws-cdk-lib/aws-stepfunctions-tasks";
+import {ServiceListener} from "./microservice";
+import {Publisher, SNSPublisher} from "./publishers";
 
 export class ExternalMicroservice implements ServiceListener {
     private readonly externalTopic: Publisher;

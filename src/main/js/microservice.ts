@@ -6,6 +6,7 @@ import {Optional} from "typescript-optional";
 import {Construct} from "constructs";
 import {Tags} from "aws-cdk-lib";
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
+import {Publisher, SNSPublisher} from "./publishers";
 
 type HandlerObjectList = { [key: string]: Handler }
 type HandlerList = HandlerObjectList | Handler[]
@@ -68,12 +69,6 @@ export type SubscriptionData = {
     events: string[]
 }
 type ReceiverFactory = (data: MicroserviceBuilderData, parent: Construct) => Publisher;
-export interface Publisher {
-    allowPublish(grantable: IGrantable): void
-    subscribeLambda(data: SubscriptionData): void
-    isFifo(): boolean
-    identifier(): string
-}
 
 export type HandlerOptions = {
     handlerName: string,
@@ -95,36 +90,6 @@ export interface ServiceListener {
     isTopicFifo(): boolean
 
     listensForEventsFrom(services: ServiceListener[]): void
-}
-
-export class SNSPublisher implements Publisher {
-
-    constructor(private topic: ITopic) {
-
-    }
-
-    allowPublish(grantable: IGrantable): void {
-        this.topic.grantPublish(grantable)
-    }
-    identifier(): string {
-        return this.topic.topicArn;
-    }
-    isFifo(): boolean {
-        return false;
-    }
-    subscribeLambda(data: SubscriptionData) {
-
-        const subscription = new LambdaSubscription(data.lambda, {
-            filterPolicy: {
-                "event-name": SubscriptionFilter.stringFilter({
-                    allowlist: data.events
-                })
-            },
-            deadLetterQueue: data.deadLetterQueue
-        })
-        this.topic.addSubscription(subscription)
-    }
-
 }
 
 export function snsReceiver(): ReceiverFactory {
