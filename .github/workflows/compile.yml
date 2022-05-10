@@ -15,9 +15,10 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run test
-      - name: cdk synth
-        uses: youyo/aws-cdk-github-actions@v2.1.1
-        with:
-          cdk_subcommand: 'synth'
-          cdk_version: '2.23.0'
-          working_dir: 'src/example'
+      - run: npm run cdk
+#      - name: cdk synth
+#        uses: youyo/aws-cdk-github-actions@v2.1.1
+#        with:
+#          cdk_subcommand: 'synth'
+#          cdk_version: '2.23.0'
+#          working_dir: 'src/example'
