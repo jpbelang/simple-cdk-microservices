@@ -10,8 +10,6 @@ export interface Publisher {
     identifier(): string
 }
 
-
-
 export class SNSPublisher implements Publisher {
 
     constructor(private topic: ITopic) {

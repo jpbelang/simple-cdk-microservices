@@ -59,7 +59,7 @@ describe("web lambda testing", () => {
                     "Environment": {
                         "Variables": {
                             "output": {
-                                "Ref": "booTopic0DE911F7"
+                                "Ref": "booPublisherTopicBE965723"
                             },
                             "env": "Dev"
                         }
