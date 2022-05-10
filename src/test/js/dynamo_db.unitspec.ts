@@ -5,7 +5,7 @@ import {Stack} from "aws-cdk-lib";
 import {DynamoDBHandler} from "../../main/js";
 import {AttributeType} from "aws-cdk-lib/aws-dynamodb";
 import {Match, Template} from "aws-cdk-lib/assertions";
-import {snsReceiver} from "../../main/js/microservice";
+import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
 
 
 describe("dynamo db testing", () => {
@@ -19,7 +19,10 @@ describe("dynamo db testing", () => {
             })
 
             let theStack = new Stack();
-            const f = snsReceiver()({
+            const subscriber = snsSubscriber()({
+                name: "boo"
+            } as any, theStack)
+            const publisher = snsPublisher()({
                 name: "boo"
             } as any, theStack)
 
@@ -29,7 +32,8 @@ describe("dynamo db testing", () => {
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                publisher: f
+                subscriber: subscriber,
+                publisher: publisher
             })
 
             const template = Template.fromStack(theStack);

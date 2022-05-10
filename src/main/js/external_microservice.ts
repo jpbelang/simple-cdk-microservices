@@ -3,15 +3,16 @@ import {Topic} from "aws-cdk-lib/aws-sns"
 import {Construct} from "constructs";
 import {ServiceListener} from "./microservice";
 import {Publisher, SNSPublisher} from "./publishers";
+import {Subscriber} from "./subscribers";
 
 export class ExternalMicroservice implements ServiceListener {
-    private readonly externalTopic: Publisher;
+    private readonly externalTopic: Subscriber;
 
-    constructor(externalTopic: Publisher, private readonly isFifo: boolean) {
+    constructor(externalTopic: Subscriber, private readonly isFifo: boolean) {
         this.externalTopic = externalTopic;
     }
 
-    topic(): Publisher {
+    topic(): Subscriber {
 
         return this.externalTopic
     }
@@ -25,7 +26,7 @@ export class ExternalMicroservice implements ServiceListener {
     }
 
 
-    static create(externalTopic: Publisher) {
+    static create(externalTopic: Subscriber) {
         return new ExternalMicroservice(externalTopic, false)
     }
 

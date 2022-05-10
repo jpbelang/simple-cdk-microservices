@@ -7,6 +7,7 @@ import {Construct} from "constructs";
 import {Tags} from "aws-cdk-lib";
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
 import {Publisher, SNSPublisher} from "./publishers";
+import {SNSSubscriber, Subscriber} from "./subscribers";
 
 type HandlerObjectList = { [key: string]: Handler }
 type HandlerList = HandlerObjectList | Handler[]
@@ -26,7 +27,7 @@ export interface Configurator {
 
     receiveInternalEvents(setter: (source: IEventSource) => void): void
 
-    listenToServiceTopic(topic: Publisher, isTopicFifo: boolean): void;
+    listenToServiceTopic(topic: Subscriber, isTopicFifo: boolean): void;
 }
 
 export class DefaultConfigurator implements Configurator {
@@ -55,7 +56,7 @@ export class DefaultConfigurator implements Configurator {
     wantSecurity(z: Configurator): void {
     }
 
-    listenToServiceTopic(topic: Publisher, isTopicFifo: boolean): void {
+    listenToServiceTopic(topic: Subscriber, isTopicFifo: boolean): void {
     }
 
 
@@ -68,11 +69,13 @@ export type SubscriptionData = {
     deadLetterQueue: Queue,
     events: string[]
 }
-type ReceiverFactory = (data: MicroserviceBuilderData, parent: Construct) => Publisher;
+type PublisherFactory = (data: MicroserviceBuilderData, parent: Construct) => Publisher;
+type SubscriberFactory = (data: MicroserviceBuilderData, parent: Construct) => Subscriber;
 
 export type HandlerOptions = {
     handlerName: string,
     publisher: Publisher,
+    subscriber: Subscriber,
     env: string,
     deadLetterQueue(): Queue;
     deadLetterFifoQueue(): Queue,
@@ -85,21 +88,32 @@ export interface Handler {
 }
 
 export interface ServiceListener {
-    topic(): Publisher
+    topic(): Subscriber
 
     isTopicFifo(): boolean
 
     listensForEventsFrom(services: ServiceListener[]): void
 }
 
-export function snsReceiver(): ReceiverFactory {
+export function snsPublisher(): PublisherFactory {
     return (data: MicroserviceBuilderData, construct: Construct) => {
 
-        const topic = new Topic(construct, data.name + "Topic", {
+        const topic = new Topic(construct, data.name + "PublisherTopic", {
             topicName: data.name + "Topic"
         })
 
         return new SNSPublisher(topic);
+    }
+}
+
+export function snsSubscriber(): SubscriberFactory {
+    return (data: MicroserviceBuilderData, construct: Construct) => {
+
+        const topic = new Topic(construct, data.name + "SubscriberTopic", {
+            topicName: data.name + "Topic"
+        })
+
+        return new SNSSubscriber(topic);
     }
 }
 
@@ -110,7 +124,8 @@ type MicroserviceData = {
     parentName: string
     deadLetterQueue: () => Queue
     deadLetterFifoQueue: () => Queue
-    topic: Publisher
+    subscriber: Subscriber
+    publisher: Publisher
     parentConstruct: Construct
     handlers: HandlerList
     configurators: Configurator[]
@@ -123,8 +138,8 @@ export class Microservice implements ServiceListener {
         this.data = data
     }
 
-    topic(): Publisher {
-        return this.data.topic;
+    topic(): Subscriber {
+        return this.data.subscriber;
     }
 
     dlq(): Queue {
@@ -146,7 +161,8 @@ type MicroserviceBuilderData = {
     name: string,
     env: string,
     tags: TaggingType,
-    messageReceiver: ReceiverFactory,
+    messagePublisher: PublisherFactory
+    messageSubscriber: SubscriberFactory,
     handlers: HandlerList
 }
 
@@ -171,7 +187,8 @@ export class MicroserviceBuilder {
 
     build(construct: Construct): Microservice {
 
-        const receiverConstruct = this.data.messageReceiver(this.data, construct);
+        const publisherConstruct = this.data.messagePublisher(this.data, construct);
+        const subscriberConstruct = this.data.messageSubscriber(this.data, construct);
 
         let dlq: Queue
         let dlfq: Queue
@@ -200,7 +217,8 @@ export class MicroserviceBuilder {
             const containingConstruct = new Construct(construct, handlerName)
             return handler.handle({
                 env: this.data.env,
-                publisher: receiverConstruct,
+                publisher: publisherConstruct,
+                subscriber: subscriberConstruct,
                 parentConstruct: containingConstruct,
                 handlerName: handlerName,
                 deadLetterQueue: deadLetterQueueFunction,
@@ -218,10 +236,11 @@ export class MicroserviceBuilder {
 
         return new Microservice({
             env: this.data.env,
-            orderedEvents: receiverConstruct.isFifo(),
+            orderedEvents: subscriberConstruct.isFifo(),
             parentConstruct: construct,
             parentName: this.data.name,
-            topic: receiverConstruct,
+            publisher: publisherConstruct,
+            subscriber: subscriberConstruct,
             deadLetterQueue: deadLetterQueueFunction,
             deadLetterFifoQueue: deadLetterQueueFunction,
             handlers: this.data.handlers,

@@ -4,7 +4,7 @@ import { Capture, Match, Template } from "aws-cdk-lib/assertions";
 import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Topic} from "aws-cdk-lib/aws-sns";
 import {Stack} from "aws-cdk-lib";
-import {snsReceiver} from "../../main/js/microservice";
+import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
 
 
 describe("subscribed lambda testing", () => {
@@ -17,7 +17,10 @@ describe("subscribed lambda testing", () => {
             })
 
             let theStack = new Stack();
-            const f = snsReceiver()({
+            const subscriber = snsSubscriber()({
+                name: "boo"
+            } as any, theStack)
+            const publisher = snsPublisher()({
                 name: "boo"
             } as any, theStack)
 
@@ -28,7 +31,8 @@ describe("subscribed lambda testing", () => {
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                publisher: f
+                publisher: publisher,
+                subscriber: subscriber
             })
 
             const template = Template.fromStack(theStack);

@@ -5,7 +5,7 @@ import {Stack} from "aws-cdk-lib";
 import {simpleMethod, WebLambda} from "../../main/js";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Template} from "aws-cdk-lib/assertions";
-import {snsReceiver} from "../../main/js/microservice";
+import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
 
 
 describe("web lambda testing", () => {
@@ -13,7 +13,10 @@ describe("web lambda testing", () => {
         it("create lambda", () => {
 
             let theStack = new Stack();
-            const f = snsReceiver()({
+            const subscriber = snsSubscriber()({
+                name: "boo"
+            } as any, theStack)
+            const publisher = snsPublisher()({
                 name: "boo"
             } as any, theStack)
             const lh = WebLambda.create({
@@ -35,7 +38,8 @@ describe("web lambda testing", () => {
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                publisher: f,
+                subscriber: subscriber,
+                publisher: publisher
             })
 
             const template = Template.fromStack(theStack);

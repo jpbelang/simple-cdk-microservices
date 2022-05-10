@@ -8,6 +8,7 @@ import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {Publisher} from "./publishers";
+import {Subscriber} from "./subscribers";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
@@ -63,9 +64,9 @@ export class LambdaConfigurator extends DefaultConfigurator {
         z.grantSecurityTo(this.func)
     }
 
-    listenToServiceTopic(pubSub: Publisher, isTopicFifo: boolean) {
+    listenToServiceTopic(topic: Subscriber, isTopicFifo: boolean): void {
 
-        pubSub.subscribeLambda({
+        topic.subscribeLambda({
             events: this.data.topicEvents,
             lambda: this.func,
             deadLetterQueue: this.config.deadLetterQueue()

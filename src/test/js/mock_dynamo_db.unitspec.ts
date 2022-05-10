@@ -2,7 +2,7 @@ import {Queue} from "aws-cdk-lib/aws-sqs";
 import {Stack} from "aws-cdk-lib";
 import {Table} from "aws-cdk-lib/aws-dynamodb";
 import {DynamoConfigurator, DynamoDBHandler} from "../../main/js/dynamo_db";
-import {snsReceiver} from "../../main/js/microservice";
+import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
 
 const {Runtime, AssetCode} = jest.requireActual("aws-cdk-lib/aws-lambda");
 const {AttributeType} = jest.requireActual("aws-cdk-lib/aws-dynamodb");
@@ -41,7 +41,10 @@ describe("mock dynamo db testing", () => {
             })
 
             let theStack = new Stack();
-            const f = snsReceiver()({
+            const subscriber = snsSubscriber()({
+                name: "boo"
+            } as any, theStack)
+            const publisher = snsPublisher()({
                 name: "boo"
             } as any, theStack)
 
@@ -51,7 +54,8 @@ describe("mock dynamo db testing", () => {
                 deadLetterFifoQueue: () => new Queue(theStack, "deadFifo"),
                 parentConstruct: theStack,
                 handlerName: "hola",
-                publisher: f
+                publisher: publisher,
+                subscriber: subscriber
             }) as any
 
             expect(configurator.id).toEqual("hola")

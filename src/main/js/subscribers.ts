@@ -1,26 +1,22 @@
+import {SubscriptionData} from "./microservice";
 import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns";
 import {IGrantable} from "aws-cdk-lib/aws-iam";
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
-import {SubscriptionData} from "./microservice";
+import {Publisher} from "./publishers";
 
-
-export interface Publisher {
-    allowPublish(grantable: IGrantable): void
+export interface Subscriber {
+    subscribeLambda(data: SubscriptionData): void
     isFifo(): boolean
     identifier(): string
 }
 
 
-
-export class SNSPublisher implements Publisher {
+export class SNSSubscriber implements Subscriber {
 
     constructor(private topic: ITopic) {
 
     }
 
-    allowPublish(grantable: IGrantable): void {
-        this.topic.grantPublish(grantable)
-    }
     identifier(): string {
         return this.topic.topicArn;
     }
