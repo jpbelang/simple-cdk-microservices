@@ -64,20 +64,7 @@ export class ExampleStack extends Stack {
                     handler: "whole_tree",
                     basePath: "banana",
                     resourceTree: null
-                })/*,
-                thirdApi: WebLambda.create({
-                    runtime: Runtime.NODEJS_14_X,
-                    code: AssetCode.fromInline("doodah"),
-                    handler: "whole_tree_with_env",
-                    basePath: "orange",
-                    environmentInfo: {
-                        domainName: "fruits",
-                        hostName: "basket",
-                        aliasTarget: "something",
-                        zoneId: "myzone"
-                    },
-                    resourceTree: null
-                })*/
+                })
             }
         }).build(this);
 

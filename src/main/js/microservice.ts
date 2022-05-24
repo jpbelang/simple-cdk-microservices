@@ -99,7 +99,7 @@ export function snsPublisher(): PublisherFactory {
     return (data: MicroserviceBuilderData, construct: Construct) => {
 
         const topic = new Topic(construct, data.name + "PublisherTopic", {
-            topicName: data.name + "Topic"
+            topicName: data.name + "PublisherTopic"
         })
 
         return new SNSPublisher(topic);
@@ -110,7 +110,7 @@ export function snsSubscriber(): SubscriberFactory {
     return (data: MicroserviceBuilderData, construct: Construct) => {
 
         const topic = new Topic(construct, data.name + "SubscriberTopic", {
-            topicName: data.name + "Topic"
+            topicName: data.name + "SubscriberTopic"
         })
 
         return new SNSSubscriber(topic);

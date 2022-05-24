@@ -12,7 +12,8 @@
     "lint": "tslint --project tsconfig.json",
     "test": "jest --passWithNoTests",
     "builder": "npm run test && webpack --config webpack.config.js",
-    "cdk": "cd src/example; npx cdk synth"
+    "cdk": "cd src/example; npx cdk synth",
+    "deploy": "cd src/example; npx cdk deploy"
   },
   "keywords": [],
   "license": "MIT",
