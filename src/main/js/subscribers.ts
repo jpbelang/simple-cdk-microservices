@@ -1,8 +1,8 @@
 import {SubscriptionData} from "./microservice";
 import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns";
-import {IGrantable} from "aws-cdk-lib/aws-iam";
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
-import {Publisher} from "./publishers";
+import {EventBus, Rule} from "aws-cdk-lib/aws-events";
+import {LambdaFunction} from "aws-cdk-lib/aws-events-targets"
 
 export interface Subscriber {
     subscribeLambda(data: SubscriptionData): void
@@ -36,5 +36,30 @@ export class SNSSubscriber implements Subscriber {
         })
         this.topic.addSubscription(subscription)
     }
+}
 
+export class EventBridgeSubscriber implements Subscriber {
+    constructor(private eventBridge: EventBus) {
+
+    }
+
+    public static create(eventBus: EventBus) {
+        return new EventBridgeSubscriber(eventBus)
+    }
+
+    identifier(): string {
+        return "";
+    }
+
+    isFifo(): boolean {
+        return false;
+    }
+
+    subscribeLambda(data: SubscriptionData): void {
+        new Rule(data.lambda, "subscription", {
+            eventBus: this.eventBridge,
+            eventPattern: {source: data.events},
+            targets: [new LambdaFunction(data.lambda, {deadLetterQueue: data.deadLetterQueue})]
+        })
+    }
 }

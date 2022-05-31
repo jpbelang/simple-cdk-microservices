@@ -40,7 +40,9 @@
     "aws-cdk-lib": "^2.23.0",
     "constructs": "^10.1.5",
     "dayjs": "^1.11.2",
-    "typescript-optional": "^2.0.1"
+    "typescript-optional": "^2.0.1",
+    "@middy/core": "^3.0.3",
+    "@middy/http-json-body-parser": "^3.0.3"
   },
   "peerDependencies": {
     "aws-cdk-lib": "^2.0.0",

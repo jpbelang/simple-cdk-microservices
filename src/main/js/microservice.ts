@@ -6,8 +6,9 @@ import {Optional} from "typescript-optional";
 import {Construct} from "constructs";
 import {Tags} from "aws-cdk-lib";
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
-import {Publisher, SNSPublisher} from "./publishers";
-import {SNSSubscriber, Subscriber} from "./subscribers";
+import {EventBridgePublisher, Publisher, SNSPublisher} from "./publishers";
+import {EventBridgeSubscriber, SNSSubscriber, Subscriber} from "./subscribers";
+import {EventBus} from "aws-cdk-lib/aws-events";
 
 type HandlerObjectList = { [key: string]: Handler }
 type HandlerList = HandlerObjectList | Handler[]
@@ -114,6 +115,20 @@ export function snsSubscriber(): SubscriberFactory {
         })
 
         return new SNSSubscriber(topic);
+    }
+}
+
+export function eventBridgePublisher(bus: EventBus): PublisherFactory {
+    return (data: MicroserviceBuilderData, construct: Construct) => {
+
+        return EventBridgePublisher.create(bus)
+    }
+}
+
+export function eventBridgeSubscriber(bus: EventBus): SubscriberFactory {
+    return (data: MicroserviceBuilderData, construct: Construct) => {
+
+        return EventBridgeSubscriber.create(bus)
     }
 }
 

@@ -1,4 +1,4 @@
-import {SNSEvent, SQSEvent} from "aws-lambda";
+import {SNSEvent, SQSEvent, EventBridgeEvent} from "aws-lambda";
 import {Optional} from "typescript-optional";
 
 
@@ -67,6 +67,31 @@ export class SNSEventMetadata implements EventMetadata {
     }
 }
 
+export class EventBusEventMetadata implements EventMetadata {
+    constructor(private event: EventBridgeEvent<string, object>, private defaultDate?: Date) {
+    }
+
+    eventName(): string {
+        return Optional.ofNullable(this.event["detail-type"]).orElse("_no_name_");
+    }
+
+    eventTime(): Date {
+        return Optional.ofNullable(this.event.time).map(s => new Date(s)).orElseGet(() => Optional.ofNullable(this.defaultDate).orElse(new Date()));
+    }
+
+    eventType(): EventType|string {
+        return Optional.ofNullable(this.event["replay-name"]).map( r => r).orElse(EventType.NORMAL);
+    }
+
+    eventVersion(): string {
+        return Optional.ofNullable(this.event.version).orElse("0");
+    }
+
+    static fromEvent(event: EventBridgeEvent<string, object>, defaultDate?: Date) {
+        return new EventBusEventMetadata(event, defaultDate)
+    }
+}
+
 export class SQSEventMetadata implements EventMetadata {
     constructor(private event: SQSEvent, private index: number, private defaultDate?: Date) {
         this.event = event;
@@ -93,3 +118,28 @@ export class SQSEventMetadata implements EventMetadata {
     }
 }
 
+type MessageType = SQSEvent|SNSEvent|EventBridgeEvent<string, object>
+
+function isEventBridgeEvent(ev: MessageType) : ev is EventBridgeEvent<string, object> {
+    return (ev as EventBridgeEvent<string, object>).detail !== undefined;
+}
+
+function isSNSEvent(ev: MessageType) : ev is SNSEvent {
+    return (ev as SNSEvent).Records[0].Sns !== undefined;
+}
+
+function isSQSEvent(ev: MessageType) : ev is SQSEvent {
+    return (ev as SQSEvent).Records[0].eventSource !== undefined;
+}
+
+export function createMetadata(message: MessageType, defaultDate?: Date): EventMetadata {
+
+    if (isEventBridgeEvent(message) ) {
+        return new EventBusEventMetadata(message as EventBridgeEvent<string, object>, defaultDate)
+    } else if ( isSNSEvent(message) ){
+
+        return new SNSEventMetadata(message as SNSEvent, defaultDate)
+    }
+
+    throw new Error("unknown message type: " + JSON.stringify(message))
+}

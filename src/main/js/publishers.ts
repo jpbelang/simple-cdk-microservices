@@ -1,5 +1,6 @@
 import {ITopic, SubscriptionFilter} from "aws-cdk-lib/aws-sns";
 import {IGrantable} from "aws-cdk-lib/aws-iam";
+import {EventBus} from "aws-cdk-lib/aws-events"
 import {LambdaSubscription} from "aws-cdk-lib/aws-sns-subscriptions";
 import {SubscriptionData} from "./microservice";
 
@@ -16,6 +17,10 @@ export class SNSPublisher implements Publisher {
 
     }
 
+    public static create(topic: ITopic) {
+        return new SNSPublisher(topic)
+    }
+
     allowPublish(grantable: IGrantable): void {
         this.topic.grantPublish(grantable)
     }
@@ -25,18 +30,28 @@ export class SNSPublisher implements Publisher {
     isFifo(): boolean {
         return false;
     }
+}
 
-    subscribeLambda(data: SubscriptionData) {
+export class EventBridgePublisher implements Publisher {
+    constructor(private eventBridge: EventBus) {
 
-        const subscription = new LambdaSubscription(data.lambda, {
-            filterPolicy: {
-                "event-name": SubscriptionFilter.stringFilter({
-                    allowlist: data.events
-                })
-            },
-            deadLetterQueue: data.deadLetterQueue
-        })
-        this.topic.addSubscription(subscription)
+    }
+
+    public static create(eventBus: EventBus) {
+        return new EventBridgePublisher(eventBus)
+    }
+
+    allowPublish(grantable: IGrantable): void {
+
+        this.eventBridge.grantPutEventsTo(grantable)
+    }
+
+    identifier(): string {
+        return this.eventBridge.eventBusArn;
+    }
+
+    isFifo(): boolean {
+        return false;
     }
 
 }

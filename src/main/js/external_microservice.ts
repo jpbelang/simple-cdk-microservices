@@ -3,7 +3,7 @@ import {Topic} from "aws-cdk-lib/aws-sns"
 import {Construct} from "constructs";
 import {ServiceListener} from "./microservice";
 import {Publisher, SNSPublisher} from "./publishers";
-import {Subscriber} from "./subscribers";
+import {SNSSubscriber, Subscriber} from "./subscribers";
 
 export class ExternalMicroservice implements ServiceListener {
     private readonly externalTopic: Subscriber;
@@ -34,6 +34,6 @@ export class ExternalMicroservice implements ServiceListener {
 
         const id = arn.split(":")
         const last = id[id.length - 1].replace(/.fifo$/, "")
-        return new ExternalMicroservice(new SNSPublisher(Topic.fromTopicArn(parent, last, arn)),arn.endsWith(".fifo"))
+        return new ExternalMicroservice(new SNSSubscriber(Topic.fromTopicArn(parent, last, arn)),arn.endsWith(".fifo"))
     }
 }

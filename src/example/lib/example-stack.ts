@@ -1,5 +1,5 @@
 import {AttributeType, StreamViewType} from "aws-cdk-lib/aws-dynamodb";
-import {AssetCode, Runtime} from "aws-cdk-lib/aws-lambda";
+import {AssetCode, InlineCode, Runtime} from "aws-cdk-lib/aws-lambda";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Duration, Stack, StackProps} from "aws-cdk-lib";
 import {MicroserviceBuilder} from "../../main/js";
@@ -9,15 +9,21 @@ import {simpleMethod, WebLambda} from "../../main/js";
 import {DynamoStreamLambda} from "../../main/js";
 import {AsyncLambda} from "../../main/js/async_local_lambda";
 import {TimerLambda} from "../../main/js/timer_lambda";
-import {Rule, Schedule, RuleTargetInput} from "aws-cdk-lib/aws-events"
+import {Rule, Schedule, RuleTargetInput, EventBus} from "aws-cdk-lib/aws-events"
 import {Construct} from "constructs";
-import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
+import {eventBridgePublisher, eventBridgeSubscriber, snsPublisher, snsSubscriber} from "../../main/js/microservice";
+import {EventBridgePublisher} from "../../main/js/publishers";
+import {EventBridgeSubscriber} from "../../main/js/subscribers";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
         super(scope, id, props);
 
         const me = new RestApi(this, "GW");
+        const bus = new EventBus(this, "bus", {
+            eventBusName: "ApplicationBus"
+        });
+
         // The code that defines your stack goes here
         const service1 = MicroserviceBuilder.microservice({
             env: "Dev",
@@ -103,5 +109,43 @@ export class ExampleStack extends Stack {
         }).build(this);
 
         service1.listensForEventsFrom([service2])
+
+        const service3 = MicroserviceBuilder.microservice({
+            env: "Dev",
+            name: "third-example",
+            tags: {
+                project: "IT"
+            },
+            messagePublisher: eventBridgePublisher(bus),
+            messageSubscriber: eventBridgeSubscriber(bus),
+            handlers: {
+                justSubscribed: SimpleLambdaSubscribed.create({
+                    topicEvents: ["please"],
+                    runtime: Runtime.NODEJS_14_X,
+                    code: new InlineCode("def main(event, context):\n\tprint(event)\n\treturn {'statusCode': 200, 'body': 'Hello, World'}"),
+                    handler: "index.main",
+                })
+            }
+        }).build(this);
+
+        const service4 = MicroserviceBuilder.microservice({
+            env: "Dev",
+            name: "fourth-example",
+            tags: {
+                project: "IT"
+            },
+            messagePublisher: eventBridgePublisher(bus),
+            messageSubscriber: eventBridgeSubscriber(bus),
+            handlers: {
+                lastly: SimpleLambdaSubscribed.create({
+                    topicEvents: ["please"],
+                    runtime: Runtime.NODEJS_14_X,
+                    code: new InlineCode("def main(event, context):\n\tprint(event)\n\treturn {'statusCode': 200, 'body': 'Hello, World'}"),
+                    handler: "index.main",
+                })
+            }
+        }).build(this);
+
+        service3.listensForEventsFrom([service4])
     }
 }
