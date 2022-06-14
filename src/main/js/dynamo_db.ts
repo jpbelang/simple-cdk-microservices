@@ -40,7 +40,7 @@ export class DynamoDBHandler implements Handler {
         Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(table).add(k,v, {
             priority: 101
         }))
-        return new DynamoConfigurator(config.handlerName, config.handlerName, table)
+        return new DynamoConfigurator(table.tableArn, config.handlerName, table)
     }
 
     static create(data: DynamoDBHandlerData) {
@@ -51,18 +51,14 @@ export class DynamoDBHandler implements Handler {
 
 export class DynamoConfigurator extends DefaultConfigurator {
 
-    private readonly handlerName: string;
-    private readonly table: Table;
 
-    constructor(id: string, tablename: string, table: Table) {
+    constructor(id: string, private readonly tablename: string, private readonly  table: Table) {
         super(id);
-        this.handlerName = tablename;
-        this.table = table
     }
 
     setEnvironment(setter: (key: string, value: string) => void) {
 
-        setter(`dynamo_${this.handlerName}`, `${this.table.tableName}`)
+        setter(`dynamo_${this.tablename}`, `${this.table.tableName}`)
     }
 
     grantSecurityTo(grantable: IGrantable) {
