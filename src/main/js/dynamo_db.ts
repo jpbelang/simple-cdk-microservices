@@ -40,7 +40,7 @@ export class DynamoDBHandler implements Handler {
         Object.entries(Optional.ofNullable(this.data.tags).orElse({})).forEach( ([k,v]) => Tags.of(table).add(k,v, {
             priority: 101
         }))
-        return new DynamoConfigurator(table.tableArn, config.handlerName, table)
+        return new DynamoConfigurator(config.handlerName, config.handlerName, table)
     }
 
     static create(data: DynamoDBHandlerData) {
