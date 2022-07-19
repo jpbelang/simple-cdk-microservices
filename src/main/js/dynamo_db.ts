@@ -52,13 +52,13 @@ export class DynamoDBHandler implements Handler {
 export class DynamoConfigurator extends DefaultConfigurator {
 
 
-    constructor(id: string, private readonly tablename: string, private readonly  table: Table) {
+    constructor(id: string, private readonly logicalTableName: string, private readonly  table: Table) {
         super(id);
     }
 
     setEnvironment(setter: (key: string, value: string) => void) {
 
-        setter(`dynamo_${this.tablename}`, `${this.table.tableName}`)
+        setter(`dynamo_${this.logicalTableName}`, `${this.table.tableName}`)
     }
 
     grantSecurityTo(grantable: IGrantable) {

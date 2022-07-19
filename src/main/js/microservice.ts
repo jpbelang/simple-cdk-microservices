@@ -228,8 +228,8 @@ export class MicroserviceBuilder {
             return dlfq
         };
 
+        const containingConstruct = new Construct(construct, this.data.name)
         const configurators = Object.entries(this.asObject(this.data.handlers)).map(([handlerName, handler]) => {
-            const containingConstruct = new Construct(construct, handlerName)
             return handler.handle({
                 env: this.data.env,
                 publisher: publisherConstruct,

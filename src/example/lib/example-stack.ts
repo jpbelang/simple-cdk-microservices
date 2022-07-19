@@ -46,7 +46,7 @@ export class ExampleStack extends Stack {
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
                 }),
-                simpleSubscribed: SimpleLambdaSubscribed.create({
+                one: SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
                     runtime: Runtime.NODEJS_14_X,
                     code: AssetCode.fromAsset("../../dist/example/apps"),
@@ -119,7 +119,7 @@ export class ExampleStack extends Stack {
             messagePublisher: eventBridgePublisher(bus),
             messageSubscriber: eventBridgeSubscriber(bus),
             handlers: {
-                justSubscribed: SimpleLambdaSubscribed.create({
+                one: SimpleLambdaSubscribed.create({
                     topicEvents: ["please"],
                     runtime: Runtime.NODEJS_14_X,
                     code: new InlineCode("def main(event, context):\n\tprint(event)\n\treturn {'statusCode': 200, 'body': 'Hello, World'}"),
