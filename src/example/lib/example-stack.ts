@@ -1,5 +1,5 @@
 import {AttributeType, StreamViewType} from "aws-cdk-lib/aws-dynamodb";
-import {AssetCode, InlineCode, Runtime} from "aws-cdk-lib/aws-lambda";
+import {AssetCode, Code, Function, InlineCode, Runtime} from "aws-cdk-lib/aws-lambda";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Duration, Stack, StackProps} from "aws-cdk-lib";
 import {MicroserviceBuilder} from "../../main/js";
@@ -12,8 +12,8 @@ import {TimerLambda} from "../../main/js/timer_lambda";
 import {Rule, Schedule, RuleTargetInput, EventBus} from "aws-cdk-lib/aws-events"
 import {Construct} from "constructs";
 import {eventBridgePublisher, eventBridgeSubscriber, snsPublisher, snsSubscriber} from "../../main/js/microservice";
-import {EventBridgePublisher} from "../../main/js/publishers";
-import {EventBridgeSubscriber} from "../../main/js/subscribers";
+import {CognitoHandler} from "../../main/js/cognito_handler";
+import {AccountRecovery} from "aws-cdk-lib/aws-cognito";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -70,6 +70,64 @@ export class ExampleStack extends Stack {
                     handler: "whole_tree",
                     basePath: "banana",
                     resourceTree: null
+                }),
+                cognito: CognitoHandler.create({
+
+                    selfSignUpEnabled: true,
+
+                    signInAliases: {
+                        username: true,
+                        email: true
+                    },
+                    standardAttributes: {
+                        email: {
+                            required: true,
+                            mutable: true
+                        },
+                        givenName: {
+                            required: true,
+                            mutable: true
+                        },
+                        familyName: {
+                            required: true,
+                            mutable: true,
+                        },
+                        fullname: {
+                            required: true,
+                            mutable: true,
+                        },
+                        address: {
+                            required: false,
+                            mutable: true,
+                        },
+                        birthdate: {
+                            required: true,
+                            mutable: true,
+                        },
+                        phoneNumber: {
+                            required: false,
+                            mutable: true,
+                        },
+
+                    },
+                    passwordPolicy: {
+                        minLength: 12,
+                        requireLowercase: true,
+                        requireUppercase: true,
+                        requireDigits: true,
+                        requireSymbols: true,
+                        tempPasswordValidity: Duration.days(3),
+                    },
+                    accountRecovery: AccountRecovery.EMAIL_ONLY,
+                    autoVerify: {email: true, phone: false},
+                    lambdaTriggerFactories: {
+                        preSignUp: (c) => new Function(c, 'preSignup', {
+                            runtime: Runtime.NODEJS_14_X,
+                            handler: 'noconfirmation.entry',
+                            code: AssetCode.fromInline("doodah"),
+                        })
+                    },
+
                 })
             }
         }).build(this);

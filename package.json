@@ -13,7 +13,9 @@
     "test": "jest --passWithNoTests",
     "builder": "npm run test && webpack --config webpack.config.js",
     "cdk": "cd src/example; npx cdk synth",
-    "deploy": "cd src/example; npx cdk deploy"
+    "deploy": "cd src/example; npx cdk deploy",
+    "destroy": "cd src/example; npx cdk destroy"
+
   },
   "keywords": [],
   "license": "MIT",
