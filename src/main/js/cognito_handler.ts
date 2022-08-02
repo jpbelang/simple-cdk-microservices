@@ -47,19 +47,6 @@ export class CognitoHandler implements Handler {
             supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
         } as UserPoolClientOptions)
 
-
-        const pooloutput = new CfnOutput(config.parentConstruct, 'poolId', {
-            value: userPool.userPoolId,
-            description: 'Pool ID',
-            exportName: 'poolId',
-        })
-
-        const clientoutput = new CfnOutput(config.parentConstruct, 'clientId', {
-            value: client.userPoolClientId,
-            description: 'Client ID',
-            exportName: 'clientId',
-        })
-
         return new CognitoConfigurator(userPool.userPoolId, userPool);
     }
 
