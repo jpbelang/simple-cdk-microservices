@@ -1,12 +1,12 @@
 import {
     UserPool,
     UserPoolClientIdentityProvider,
-    UserPoolClientOptions,
+    UserPoolClientOptions, UserPoolOperation,
     UserPoolProps,
     UserPoolTriggers
 } from "aws-cdk-lib/aws-cognito";
 import {Optional} from "typescript-optional";
-import {IFunction} from "aws-cdk-lib/aws-lambda";
+import {IFunction, Function} from "aws-cdk-lib/aws-lambda";
 import {Construct} from "constructs";
 import {CfnOutput, RemovalPolicy} from "aws-cdk-lib";
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions, NonMandatoryTaggingType} from "./microservice";
@@ -15,7 +15,7 @@ type Builder<T> = (c: Construct) => T
 
 // trying this.
 type LambdaTriggerFactoriesType = {
-    [K in keyof UserPoolTriggers]: Builder<IFunction>
+    [K in keyof UserPoolTriggers]: Builder<Function>
 }
 export type UserPoolHandlerProps = Omit<UserPoolProps, "lambdaTriggers"> & {
     tags?: NonMandatoryTaggingType,
@@ -31,9 +31,6 @@ export class CognitoHandler implements Handler {
 
         const userPool = new UserPool(config.parentConstruct, "user-pool", {
             ...this.data,
-            lambdaTriggers: {
-                preSignUp: Optional.ofNullable(this.data.lambdaTriggerFactories).map(x => x.preSignUp).map(x => x(config.parentConstruct)).orUndefined()
-            },
             removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
         })
 
@@ -47,7 +44,17 @@ export class CognitoHandler implements Handler {
             supportedIdentityProviders: [UserPoolClientIdentityProvider.COGNITO]
         } as UserPoolClientOptions)
 
-        return new CognitoConfigurator(userPool.userPoolId, userPool);
+        const functions = Object.entries(Optional.ofNullable(this.data.lambdaTriggerFactories).orElse({})).map(([name, funk]) => {
+
+            const trigger = funk(config.parentConstruct)
+                .addEnvironment("cognitoUserPool", userPool.userPoolArn)
+                .addEnvironment("cognitoClient", client.userPoolClientId)
+
+            userPool.addTrigger(UserPoolOperation.of(name), trigger)
+            return trigger;
+        })
+
+        return new CognitoConfigurator(userPool.userPoolId, userPool, functions);
     }
 
     static create(props: UserPoolHandlerProps) {
@@ -58,8 +65,12 @@ export class CognitoHandler implements Handler {
 
 export class CognitoConfigurator extends DefaultConfigurator {
 
-    constructor(id:string, private pool: UserPool) {
+    constructor(id: string, private pool: UserPool, private functions: Function[]) {
         super(id)
+    }
+
+    wantEnvironment(z: Configurator) {
+        z.setEnvironment((k, v) => this.functions.forEach(funk => funk.addEnvironment(k, v)));
     }
 
     setEnvironment(setter: (key: string, value: string) => void) {
