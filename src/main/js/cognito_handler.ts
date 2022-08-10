@@ -47,8 +47,8 @@ export class CognitoHandler implements Handler {
         const functions = Object.entries(Optional.ofNullable(this.data.lambdaTriggerFactories).orElse({})).map(([name, funk]) => {
 
             const trigger = funk(config.parentConstruct)
-                .addEnvironment("cognitoUserPool", userPool.userPoolArn)
-                .addEnvironment("cognitoClient", client.userPoolClientId)
+//                .addEnvironment("cognitoUserPool", userPool.userPoolArn)
+//                .addEnvironment("cognitoClient", client.userPoolClientId)
 
             userPool.addTrigger(UserPoolOperation.of(name), trigger)
             return trigger;
