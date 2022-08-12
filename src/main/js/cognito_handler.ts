@@ -76,6 +76,7 @@ export class CognitoConfigurator extends DefaultConfigurator {
     setEnvironment(setter: (key: string, value: string) => void) {
 
         setter(`cognitoUserPool_${this.logicalTableName}`, `${this.pool.userPoolArn}`)
+        setter(`cognitoUserPoolId_${this.logicalTableName}`, `${this.pool.userPoolId}`)
         setter(`cognitoUserPoolClientId_${this.logicalTableName}`, `${this.client.userPoolClientId}`)
     }
 }
