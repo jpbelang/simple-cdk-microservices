@@ -1,14 +1,14 @@
 import {
-    UserPool,
+    UserPool, UserPoolClient,
     UserPoolClientIdentityProvider,
     UserPoolClientOptions, UserPoolOperation,
     UserPoolProps,
     UserPoolTriggers
 } from "aws-cdk-lib/aws-cognito";
 import {Optional} from "typescript-optional";
-import {IFunction, Function} from "aws-cdk-lib/aws-lambda";
+import {Function} from "aws-cdk-lib/aws-lambda";
 import {Construct} from "constructs";
-import {CfnOutput, RemovalPolicy} from "aws-cdk-lib";
+import {RemovalPolicy} from "aws-cdk-lib";
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions, NonMandatoryTaggingType} from "./microservice";
 
 type Builder<T> = (c: Construct) => T
@@ -54,7 +54,7 @@ export class CognitoHandler implements Handler {
             return trigger;
         })
 
-        return new CognitoConfigurator(userPool.userPoolId, userPool, functions);
+        return new CognitoConfigurator(userPool.userPoolId, config.handlerName, userPool, client, functions);
     }
 
     static create(props: UserPoolHandlerProps) {
@@ -65,7 +65,7 @@ export class CognitoHandler implements Handler {
 
 export class CognitoConfigurator extends DefaultConfigurator {
 
-    constructor(id: string, private pool: UserPool, private functions: Function[]) {
+    constructor(id: string, private logicalTableName: string, private pool: UserPool, private client: UserPoolClient, private functions: Function[]) {
         super(id)
     }
 
@@ -75,6 +75,7 @@ export class CognitoConfigurator extends DefaultConfigurator {
 
     setEnvironment(setter: (key: string, value: string) => void) {
 
-        setter(`cognitoPool`, `${this.pool.userPoolArn}`)
+        setter(`cognitoUserPool_${this.logicalTableName}`, `${this.pool.userPoolArn}`)
+        setter(`cognitoUserPoolClientId_${this.logicalTableName}`, `${this.client.userPoolClientId}`)
     }
 }
