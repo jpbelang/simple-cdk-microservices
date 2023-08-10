@@ -1,4 +1,4 @@
-name: Compile
+name: Publish
 on:
   push:
     tags:
