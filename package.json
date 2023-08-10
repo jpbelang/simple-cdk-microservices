@@ -28,6 +28,7 @@
     "webpack": "^4.42.1",
     "webpack-cli": "^3.3.11",
     "@aws-cdk/assert": "^1.137.0",
+    "aws-cdk": "1.137.0",
     "@types/jest-when": "^2.7.1",
     "jest-when": "^2.7.2",
     "jest": "^26.4.2",
