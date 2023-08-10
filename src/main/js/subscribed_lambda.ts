@@ -77,7 +77,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
             const queueSubscription = new SqsSubscription(queue, {
                 filterPolicy: {
                     "event-name": SubscriptionFilter.stringFilter({
-                        whitelist: this.data.topicEvents
+                        allowlist: this.data.topicEvents
                     }),
                 },
                 deadLetterQueue: this.config.deadLetterFifoQueue(),
@@ -90,7 +90,7 @@ export class LambdaConfigurator extends DefaultConfigurator {
             const subscription = new LambdaSubscription(this.func, {
                 filterPolicy: {
                     "event-name": SubscriptionFilter.stringFilter({
-                        whitelist: this.data.topicEvents
+                        allowlist: this.data.topicEvents
                     })
                 },
                 deadLetterQueue: this.config.deadLetterQueue()
