@@ -10,8 +10,11 @@ import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
+import {Construct} from "constructs";
+import {buildParentList, CompatibilityChange} from "./compatibility";
 
 export type DynamoDBHandlerData = {
+    compatibility?: CompatibilityChange
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
     tags?: NonMandatoryTaggingType
@@ -30,7 +33,11 @@ export class DynamoDBHandler implements Handler {
             removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
         });
-        const table = new Table(config.parentConstruct, config.handlerName, adjustedProps)
+
+        const parentage = Optional.ofNullable(this.data.compatibility)
+            .map(compat => compat({constructs: buildParentList(config.parentConstruct), localName:  config.handlerName}))
+            .orElse({id:config.handlerName, parent: config.parentConstruct})
+        const table = new Table(parentage.parent, parentage.id, adjustedProps)
 
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {
             table.addGlobalSecondaryIndex(gsi)

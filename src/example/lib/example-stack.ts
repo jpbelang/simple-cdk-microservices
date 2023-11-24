@@ -14,6 +14,7 @@ import {Construct} from "constructs";
 import {eventBridgePublisher, eventBridgeSubscriber, snsPublisher, snsSubscriber} from "../../main/js/microservice";
 import {CognitoHandler} from "../../main/js/cognito_handler";
 import {AccountRecovery} from "aws-cdk-lib/aws-cognito";
+import {V1ToV2Table} from "../../main/js/compatibility";
 
 export class ExampleStack extends Stack {
     constructor(scope: Construct, id: string, props?: StackProps) {
@@ -42,7 +43,8 @@ export class ExampleStack extends Stack {
                         project: "NotIT"
                     }
                 }),
-                database: DynamoDBHandler.create({
+                myTable: DynamoDBHandler.create({
+                    compatibility: V1ToV2Table,
                     partitionKey: {name: "pk", type: AttributeType.STRING},
                     sortKey: {name: "sk", type: AttributeType.STRING},
                 }),
