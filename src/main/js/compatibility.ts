@@ -1,6 +1,20 @@
 import {Construct} from "constructs";
+import {HandlerOptions} from "./microservice";
+import {Optional} from "typescript-optional";
 
-export function buildParentList(c: Construct): Construct[] {
+
+export function  calculateParentage(compatibility: CompatibilityChange|undefined, config: HandlerOptions) {
+    return Optional.ofNullable(compatibility)
+        .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, compat))
+        .orElse({id: config.handlerName, parent: config.parentConstruct});
+}
+
+function executeCompatibilityChange(parentConstruct: Construct, localName: string, change: CompatibilityChange) {
+    const parentList = buildParentList(parentConstruct)
+    return change({constructs: parentList, localName})
+}
+
+function buildParentList(c: Construct): Construct[] {
     const parentList: Construct[] = []
     let parent = c;
     while (parent) {
@@ -13,7 +27,7 @@ export function buildParentList(c: Construct): Construct[] {
 export type CompatibilityChange = (s: {
     constructs: Construct[]
     localName: string
-}) => {parent: Construct, id: string}
+}) => { parent: Construct, id: string }
 
 export const V1ToV2Table: CompatibilityChange = ({constructs, localName}) => {
 

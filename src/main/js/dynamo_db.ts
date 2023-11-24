@@ -11,7 +11,8 @@ import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {Construct} from "constructs";
-import {buildParentList, CompatibilityChange} from "./compatibility";
+import {calculateParentage, CompatibilityChange} from "./compatibility";
+import {data} from "aws-cdk/lib/logging";
 
 export type DynamoDBHandlerData = {
     compatibility?: CompatibilityChange
@@ -34,9 +35,7 @@ export class DynamoDBHandler implements Handler {
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
         });
 
-        const parentage = Optional.ofNullable(this.data.compatibility)
-            .map(compat => compat({constructs: buildParentList(config.parentConstruct), localName:  config.handlerName}))
-            .orElse({id:config.handlerName, parent: config.parentConstruct})
+        const parentage = calculateParentage(this.data.compatibility, config)
         const table = new Table(parentage.parent, parentage.id, adjustedProps)
 
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {
@@ -49,6 +48,7 @@ export class DynamoDBHandler implements Handler {
         }))
         return new DynamoConfigurator(config.handlerName, config.handlerName, table)
     }
+
 
     static create(data: DynamoDBHandlerData) {
 
