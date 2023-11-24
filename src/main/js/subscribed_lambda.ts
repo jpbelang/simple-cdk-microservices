@@ -9,10 +9,11 @@ import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {Publisher} from "./publishers";
 import {Subscriber} from "./subscribers";
+import {calculateParentage, Compatibility} from "./compatibility";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
-} & LambdaSupportProps
+} & LambdaSupportProps & Compatibility
 
 
 function adjustData(data: LambdaSubscribedHandlerData, deadLetterQueue: Queue) {
@@ -35,7 +36,8 @@ export class SimpleLambdaSubscribed implements Handler {
 
         let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue())
-        const func = new lambda.Function(config.parentConstruct, id, data)
+        const parentage = calculateParentage(this.data, config)
+        const func = new lambda.Function(parentage.parent, parentage.id, data)
         configureFunction(data, config, func);
 
         return new LambdaConfigurator(id, func, data, config)

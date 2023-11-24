@@ -3,8 +3,12 @@ import {HandlerOptions} from "./microservice";
 import {Optional} from "typescript-optional";
 
 
-export function  calculateParentage(compatibility: CompatibilityChange|undefined, config: HandlerOptions) {
-    return Optional.ofNullable(compatibility)
+export type Compatibility = {
+    compatibility?: CompatibilityChange
+}
+
+export function calculateParentage(compatibility: Compatibility, config: HandlerOptions) {
+    return Optional.ofNullable(compatibility.compatibility)
         .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, compat))
         .orElse({id: config.handlerName, parent: config.parentConstruct});
 }
@@ -36,4 +40,13 @@ export const V1ToV2Table: CompatibilityChange = ({constructs, localName}) => {
         id: constructs[0].node.id + "-" + localName
     }
 }
+
+export const V1ToV2Handler: CompatibilityChange = ({constructs, localName}) => {
+
+    return {
+        parent: constructs[1],
+        id: "my_lambda.worker" // wrong.  need to get the name of the lambda
+    }
+}
+
 //first-example-myTable, ExampleStack/first-example/myTable/Resource
