@@ -11,9 +11,9 @@ import {Publisher} from "./publishers";
 import {Subscriber} from "./subscribers";
 import {calculateParentage, Compatibility} from "./compatibility";
 
-export type LambdaSubscribedHandlerData = {
+export interface LambdaSubscribedHandlerData extends LambdaSupportProps, Compatibility<LambdaSubscribedHandlerData>{
     topicEvents: string[]
-} & LambdaSupportProps & Compatibility<any>
+}
 
 
 function adjustData(data: LambdaSubscribedHandlerData, deadLetterQueue: Queue) {
@@ -34,13 +34,12 @@ export class SimpleLambdaSubscribed implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue())
         const parentage = calculateParentage(this.data, config, this.data)
         const func = new lambda.Function(parentage.parent, parentage.id, data)
         configureFunction(data, config, func);
 
-        return new LambdaConfigurator(id, func, data, config)
+        return new LambdaConfigurator(parentage.id, func, data, config)
     }
 
     static create(data: LambdaSubscribedHandlerData) {

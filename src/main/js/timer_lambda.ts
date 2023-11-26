@@ -6,11 +6,12 @@ import {Optional} from "typescript-optional";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {LambdaFunction} from "aws-cdk-lib/aws-events-targets";
 import {Rule, RuleTargetInput, Schedule} from "aws-cdk-lib/aws-events";
+import {calculateParentage, Compatibility} from "./compatibility";
 
-export type TimerLambdaHandlerData = {
+export interface TimerLambdaHandlerData extends LambdaSupportProps, Compatibility<TimerLambdaHandlerData> {
     schedule: Schedule,
-    event: RuleTargetInput,
-} & LambdaSupportProps
+    event: RuleTargetInput
+}
 
 
 function adjustData(data: TimerLambdaHandlerData, deadLetterQueue: Queue) {
@@ -31,9 +32,9 @@ export class TimerLambda implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue())
-        const func = new lambda.Function(config.parentConstruct, id, data)
+        const parentage = calculateParentage(this.data, config, this.data)
+        const func = new lambda.Function(config.parentConstruct, parentage.id, data)
         configureFunction(data, config, func);
         const rule = new Rule(func, "timer", {
             schedule: this.data.schedule,
@@ -43,7 +44,7 @@ export class TimerLambda implements Handler {
             })]
         })
 
-        return new LambdaConfigurator(id, func, data, config)
+        return new LambdaConfigurator(parentage.id, func, data, config)
     }
 
     static create(data: TimerLambdaHandlerData) {

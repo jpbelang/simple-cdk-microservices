@@ -12,11 +12,11 @@ import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {calculateParentage, Compatibility} from "./compatibility";
 
-export type DynamoDBHandlerData = {
+export interface DynamoDBHandlerData extends TableProps, Compatibility<DynamoDBHandlerData> {
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
     tags?: NonMandatoryTaggingType
-} & TableProps & Compatibility<any>
+}
 
 export class DynamoDBHandler implements Handler {
     private data: DynamoDBHandlerData;

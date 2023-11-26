@@ -2,9 +2,11 @@ import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./micr
 import {Function} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {configureFunction, LambdaSupportProps} from "./lambda_support";
+import {DynamoDBHandler, DynamoDBHandlerData} from "./dynamo_db";
+import {calculateParentage, Compatibility} from "./compatibility";
 
-export type DynamoStreamHandlerData = {
-} & LambdaSupportProps
+export interface DynamoStreamHandlerData extends LambdaSupportProps, Compatibility<DynamoStreamHandlerData> {
+}
 
 export class DynamoStreamLambda implements Handler {
     private data: DynamoStreamHandlerData;
@@ -15,10 +17,10 @@ export class DynamoStreamLambda implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${this.data.handler}`;
-        const func = new Function(config.parentConstruct, id, this.data)
+        const parentage = calculateParentage(this.data, config, this.data)
+        const func = new Function(parentage.parent, parentage.id, this.data)
         configureFunction(this.data, config, func);
-        return new LambdaConfigurator(id, func)
+        return new LambdaConfigurator(parentage.id, func)
     }
 
     static create(data: DynamoStreamHandlerData) {

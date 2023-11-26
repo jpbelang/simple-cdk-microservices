@@ -1,5 +1,5 @@
 import {AttributeType, StreamViewType} from "aws-cdk-lib/aws-dynamodb";
-import {AssetCode, Code, Function, InlineCode, Runtime} from "aws-cdk-lib/aws-lambda";
+import {AssetCode, Function, InlineCode, Runtime} from "aws-cdk-lib/aws-lambda";
 import {RestApi} from "aws-cdk-lib/aws-apigateway";
 import {Duration, Stack, StackProps} from "aws-cdk-lib";
 import {MicroserviceBuilder} from "../../main/js";

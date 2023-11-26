@@ -10,6 +10,7 @@ import {Function} from "aws-cdk-lib/aws-lambda";
 import {Construct} from "constructs";
 import {RemovalPolicy} from "aws-cdk-lib";
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions, NonMandatoryTaggingType} from "./microservice";
+import {calculateParentage, Compatibility} from "./compatibility";
 
 type Builder<T> = (c: Construct) => T
 
@@ -17,19 +18,21 @@ type Builder<T> = (c: Construct) => T
 type LambdaTriggerFactoriesType = {
     [K in keyof UserPoolTriggers]: Builder<Function>
 }
-export type UserPoolHandlerProps = Omit<UserPoolProps, "lambdaTriggers"> & {
+export interface UserPoolHandlerData extends Omit<UserPoolProps, "lambdaTriggers">, Compatibility<UserPoolHandlerData>{
     tags?: NonMandatoryTaggingType,
     lambdaTriggerFactories?: LambdaTriggerFactoriesType,
 }
 
 export class CognitoHandler implements Handler {
 
-    constructor(private data: UserPoolHandlerProps) {
+    constructor(private data: UserPoolHandlerData) {
     }
 
     handle(config: HandlerOptions): Configurator {
 
-        const userPool = new UserPool(config.parentConstruct, "user-pool", {
+        const parentage = calculateParentage(this.data, config, this.data)
+
+        const userPool = new UserPool(parentage.parent, parentage.id, {
             ...this.data,
             removalPolicy: Optional.ofNullable(this.data.removalPolicy).orElse(RemovalPolicy.DESTROY),
         })
@@ -57,7 +60,7 @@ export class CognitoHandler implements Handler {
         return new CognitoConfigurator(userPool.userPoolId, config.handlerName, userPool, client, functions);
     }
 
-    static create(props: UserPoolHandlerProps) {
+    static create(props: UserPoolHandlerData) {
         return new CognitoHandler(props)
     }
 }
