@@ -44,7 +44,7 @@ describe("subscribed lambda testing", () => {
                     },
                     "Role": {
                         "Fn::GetAtt": [
-                            "mylambdaServiceRole8D7BC871",
+                            "holaServiceRole360933F0",
                             "Arn"
                         ]
                     },
@@ -68,8 +68,8 @@ describe("subscribed lambda testing", () => {
                     "Runtime": "nodejs12.x"
                 },
                 "DependsOn": [
-                    "mylambdaServiceRoleDefaultPolicy4394AD8A",
-                    "mylambdaServiceRole8D7BC871"
+                    "holaServiceRoleDefaultPolicy5C0B1395",
+                    "holaServiceRole360933F0"
                 ]
             });
 
