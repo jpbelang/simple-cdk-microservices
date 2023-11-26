@@ -9,9 +9,9 @@ export type Compatibility<T> = {
     compatibility?: CompatibilityChange<T>
 }
 
-export function calculateParentage<T>(compatibility: Compatibility<T>, config: HandlerOptions, data: T ) {
+export function calculateParentage<T extends Compatibility<T>>(compatibility: T, config: HandlerOptions) {
     return Optional.ofNullable(compatibility.compatibility)
-        .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, data, compat))
+        .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, compatibility, compat))
         .orElse({id: config.handlerName, parent: config.parentConstruct});
 }
 

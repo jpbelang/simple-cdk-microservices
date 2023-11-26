@@ -6,10 +6,11 @@ import {configureFunction, LambdaSupportProps} from "./lambda_support";
 import {SqsEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
 import {IGrantable} from "aws-cdk-lib/aws-iam";
 import {Tags} from "aws-cdk-lib";
+import {calculateParentage, Compatibility} from "./compatibility";
 
-export type AsyncLambdaHandlerData = {
+export interface AsyncLambdaHandlerData extends LambdaSupportProps, Compatibility<AsyncLambdaHandlerData> {
     fifo?: boolean
-} & LambdaSupportProps
+}
 
 function adjustData(data: AsyncLambdaHandlerData, deadLetterQueue: Queue) {
 
@@ -29,9 +30,10 @@ export class AsyncLambda implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue())
-        const func = new lambda.Function(config.parentConstruct, id, data)
+        const parentage = calculateParentage(this.data, config)
+
+        const func = new lambda.Function(config.parentConstruct, parentage.id, data)
         const queue = new Queue(func, "queue-for-func", {
             fifo: Optional.ofNullable(this.data.fifo).orUndefined(),
             deadLetterQueue: {
@@ -49,7 +51,7 @@ export class AsyncLambda implements Handler {
             priority: 101
         }))
 
-        return new AsyncLambdaConfigurator(id, func, queue, data, config)
+        return new AsyncLambdaConfigurator(parentage.id, func, queue, data, config)
     }
 
     static create(data: AsyncLambdaHandlerData) {

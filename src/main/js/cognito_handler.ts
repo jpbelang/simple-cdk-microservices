@@ -1,7 +1,9 @@
 import {
-    UserPool, UserPoolClient,
+    UserPool,
+    UserPoolClient,
     UserPoolClientIdentityProvider,
-    UserPoolClientOptions, UserPoolOperation,
+    UserPoolClientOptions,
+    UserPoolOperation,
     UserPoolProps,
     UserPoolTriggers
 } from "aws-cdk-lib/aws-cognito";
@@ -30,7 +32,7 @@ export class CognitoHandler implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        const parentage = calculateParentage(this.data, config, this.data)
+        const parentage = calculateParentage(this.data, config)
 
         const userPool = new UserPool(parentage.parent, parentage.id, {
             ...this.data,

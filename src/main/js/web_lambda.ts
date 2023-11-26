@@ -1,8 +1,15 @@
-
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions} from "./microservice";
-import {BaseEnvironmentInfo, configureFunction, EnvironmentInfo, LambdaSupportProps} from "./lambda_support";
+import {BaseEnvironmentInfo, configureFunction, LambdaSupportProps} from "./lambda_support";
 import {Function} from "aws-cdk-lib/aws-lambda"
-import {BasePathMapping, CorsOptions, DomainName, LambdaIntegration, LambdaRestApi, IResource} from "aws-cdk-lib/aws-apigateway";
+import {
+    BasePathMapping,
+    CorsOptions,
+    DomainName,
+    IResource,
+    LambdaIntegration,
+    LambdaRestApi
+} from "aws-cdk-lib/aws-apigateway";
+import {calculateParentage, Compatibility} from "./compatibility";
 
 export type EnumeratedApiProps = {
     resourceTree: ResourceTree
@@ -16,7 +23,8 @@ export type DelegatedApiProps = {
 }
 
 
-export type WebHandlerData = (EnumeratedApiProps|DelegatedApiProps) & LambdaSupportProps
+export type WebHandlerDataSomething = (EnumeratedApiProps | DelegatedApiProps) & LambdaSupportProps
+export type WebHandlerData = WebHandlerDataSomething & Compatibility<WebHandlerDataSomething>
 
 type MethodIntegrator = (methodName: string, resource: IResource, func: Function ) => void
 type ResourceIntegrator = (methodName: string, resource: IResource, func: Function ) => [IResource, ResourceTree]
@@ -71,15 +79,16 @@ export class WebLambda implements Handler {
 
     handle(config: HandlerOptions): Configurator {
 
-        let id = `${this.data.handler}`;
-        const func = new Function(config.parentConstruct, id, this.data)
+        const parentage = calculateParentage(this.data, config)
+
+        const func = new Function(config.parentConstruct, parentage.id, this.data)
         configureFunction(this.data, config, func);
 
         if ( this.data.resourceTree != null) {
             configureTree(func, this.data.topResource, this.data.resourceTree)
         } else {
 
-            const lra = new LambdaRestApi(config.parentConstruct, `${id}ApiGateway`, {
+            const lra = new LambdaRestApi(config.parentConstruct, `${parentage.id}ApiGateway`, {
                 handler: func,
                 restApiName: `${config.handlerName}-${this.data.basePath}`,
                 defaultCorsPreflightOptions: this.data.defaultCorsPreflightOptions
@@ -94,7 +103,7 @@ export class WebLambda implements Handler {
                     domainNameAliasTarget: actualDomainName.aliasTarget
                 })
 
-                const basePath = new BasePathMapping(config.parentConstruct, `${id}Mapping`, {
+                const basePath = new BasePathMapping(config.parentConstruct, `${parentage.id}Mapping`, {
                     basePath: this.data.basePath,
                     restApi: lra,
                     domainName: domainName
@@ -102,7 +111,7 @@ export class WebLambda implements Handler {
             }
         }
 
-        return new WebLambdaConfigurator(id, func)
+        return new WebLambdaConfigurator(parentage.id, func)
     }
 
 

@@ -1,10 +1,5 @@
 import {Configurator, DefaultConfigurator, Handler, HandlerOptions, NonMandatoryTaggingType} from "./microservice"
-import {
-    BillingMode,
-    GlobalSecondaryIndexProps,
-    Table,
-    TableProps
-} from "aws-cdk-lib/aws-dynamodb"
+import {BillingMode, GlobalSecondaryIndexProps, Table, TableProps} from "aws-cdk-lib/aws-dynamodb"
 import {RemovalPolicy, Tags} from "aws-cdk-lib";
 import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
@@ -32,7 +27,7 @@ export class DynamoDBHandler implements Handler {
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
         });
 
-        const parentage = calculateParentage(this.data, config, this.data)
+        const parentage = calculateParentage(this.data, config)
         const table = new Table(parentage.parent, parentage.id, adjustedProps)
 
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {

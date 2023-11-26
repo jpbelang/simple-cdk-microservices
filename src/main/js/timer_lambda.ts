@@ -33,7 +33,7 @@ export class TimerLambda implements Handler {
     handle(config: HandlerOptions): Configurator {
 
         const data = adjustData(this.data, config.deadLetterQueue())
-        const parentage = calculateParentage(this.data, config, this.data)
+        const parentage = calculateParentage(this.data, config)
         const func = new lambda.Function(config.parentConstruct, parentage.id, data)
         configureFunction(data, config, func);
         const rule = new Rule(func, "timer", {
