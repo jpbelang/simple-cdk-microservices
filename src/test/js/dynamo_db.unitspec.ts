@@ -5,7 +5,7 @@ import {Stack} from "aws-cdk-lib";
 import {DynamoDBHandler} from "../../main/js";
 import {AttributeType} from "aws-cdk-lib/aws-dynamodb";
 import {Match, Template} from "aws-cdk-lib/assertions";
-import {snsPublisher, snsSubscriber} from "../../main/js/microservice";
+import {snsPublisher, snsSubscriber} from "../../main/js";
 
 
 describe("dynamo db testing", () => {

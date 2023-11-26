@@ -10,15 +10,13 @@ import {IGrantable} from "aws-cdk-lib/aws-iam"
 import {Optional} from "typescript-optional";
 import {IEventSource, StartingPosition} from "aws-cdk-lib/aws-lambda";
 import {DynamoEventSource} from "aws-cdk-lib/aws-lambda-event-sources";
-import {Construct} from "constructs";
-import {calculateParentage, Compatibility, CompatibilityChange} from "./compatibility";
-import {data} from "aws-cdk/lib/logging";
+import {calculateParentage, Compatibility} from "./compatibility";
 
 export type DynamoDBHandlerData = {
     globalIndices?: [GlobalSecondaryIndexProps]
     tableConfigurator?: (table: Table, data: DynamoDBHandlerData, config: HandlerOptions) => void
     tags?: NonMandatoryTaggingType
-} & TableProps & Compatibility
+} & TableProps & Compatibility<any>
 
 export class DynamoDBHandler implements Handler {
     private data: DynamoDBHandlerData;
@@ -34,7 +32,7 @@ export class DynamoDBHandler implements Handler {
             billingMode: Optional.ofNullable(this.data.billingMode).orElse(BillingMode.PAY_PER_REQUEST)
         });
 
-        const parentage = calculateParentage(this.data, config)
+        const parentage = calculateParentage(this.data, config, this.data)
         const table = new Table(parentage.parent, parentage.id, adjustedProps)
 
         Optional.ofNullable(this.data.globalIndices).orElse([] as any).forEach(gsi => {

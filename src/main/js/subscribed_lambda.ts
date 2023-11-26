@@ -13,7 +13,7 @@ import {calculateParentage, Compatibility} from "./compatibility";
 
 export type LambdaSubscribedHandlerData = {
     topicEvents: string[]
-} & LambdaSupportProps & Compatibility
+} & LambdaSupportProps & Compatibility<any>
 
 
 function adjustData(data: LambdaSubscribedHandlerData, deadLetterQueue: Queue) {
@@ -36,7 +36,7 @@ export class SimpleLambdaSubscribed implements Handler {
 
         let id = `${this.data.handler}`;
         const data = adjustData(this.data, config.deadLetterQueue())
-        const parentage = calculateParentage(this.data, config)
+        const parentage = calculateParentage(this.data, config, this.data)
         const func = new lambda.Function(parentage.parent, parentage.id, data)
         configureFunction(data, config, func);
 

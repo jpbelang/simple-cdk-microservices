@@ -11,8 +11,8 @@ import {AsyncLambda} from "../../main/js/async_local_lambda";
 import {TimerLambda} from "../../main/js/timer_lambda";
 import {Rule, Schedule, RuleTargetInput, EventBus} from "aws-cdk-lib/aws-events"
 import {Construct} from "constructs";
-import {eventBridgePublisher, eventBridgeSubscriber, snsPublisher, snsSubscriber} from "../../main/js/microservice";
-import {CognitoHandler} from "../../main/js/cognito_handler";
+import {eventBridgePublisher, eventBridgeSubscriber, snsPublisher, snsSubscriber} from "../../main/js";
+import {CognitoHandler} from "../../main/js";
 import {AccountRecovery} from "aws-cdk-lib/aws-cognito";
 import {V1ToV2Handler, V1ToV2Table} from "../../main/js/compatibility";
 

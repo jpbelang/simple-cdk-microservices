@@ -1,21 +1,23 @@
 import {Construct} from "constructs";
 import {HandlerOptions} from "./microservice";
 import {Optional} from "typescript-optional";
+import {DynamoDBHandlerData} from "./dynamo_db";
+import {LambdaSubscribedHandlerData} from "./subscribed_lambda";
 
 
-export type Compatibility = {
-    compatibility?: CompatibilityChange
+export type Compatibility<T> = {
+    compatibility?: CompatibilityChange<T>
 }
 
-export function calculateParentage(compatibility: Compatibility, config: HandlerOptions) {
+export function calculateParentage<T>(compatibility: Compatibility<T>, config: HandlerOptions, data: T ) {
     return Optional.ofNullable(compatibility.compatibility)
-        .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, compat))
+        .map(compat => executeCompatibilityChange(config.parentConstruct, config.handlerName, data, compat))
         .orElse({id: config.handlerName, parent: config.parentConstruct});
 }
 
-function executeCompatibilityChange(parentConstruct: Construct, localName: string, change: CompatibilityChange) {
+function executeCompatibilityChange<T>(parentConstruct: Construct, localName: string, data: T, change: CompatibilityChange<T>) {
     const parentList = buildParentList(parentConstruct)
-    return change({constructs: parentList, localName})
+    return change({constructs: parentList, localName, data})
 }
 
 function buildParentList(c: Construct): Construct[] {
@@ -28,12 +30,13 @@ function buildParentList(c: Construct): Construct[] {
     return parentList
 }
 
-export type CompatibilityChange = (s: {
+export type CompatibilityChange<T> = (s: {
     constructs: Construct[]
     localName: string
+    data: T
 }) => { parent: Construct, id: string }
 
-export const V1ToV2Table: CompatibilityChange = ({constructs, localName}) => {
+export const V1ToV2Table: CompatibilityChange<DynamoDBHandlerData> = ({constructs, localName, data}) => {
 
     return {
         parent: constructs[1],
@@ -41,11 +44,11 @@ export const V1ToV2Table: CompatibilityChange = ({constructs, localName}) => {
     }
 }
 
-export const V1ToV2Handler: CompatibilityChange = ({constructs, localName}) => {
+export const V1ToV2Handler: CompatibilityChange<LambdaSubscribedHandlerData> = ({constructs, localName, data}) => {
 
     return {
         parent: constructs[1],
-        id: "my_lambda.worker" // wrong.  need to get the name of the lambda
+        id: data.handler // wrong.  need to get the name of the lambda
     }
 }
 
